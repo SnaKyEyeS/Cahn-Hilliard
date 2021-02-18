@@ -45,7 +45,7 @@ if __name__ == "__main__":
     f = lambda x: np.exp(np.sin(x))
 
     # Derive function
-    x, f_dot = diff(rect -2*np.pi, 2*np.pi, 24, order=1)
+    x, f_dot = diff(rect, -2*np.pi, 2*np.pi, 24, order=1)
 
     plt.plot(x, f_dot)
     # plt.plot(x, f(x)*np.cos(x))
