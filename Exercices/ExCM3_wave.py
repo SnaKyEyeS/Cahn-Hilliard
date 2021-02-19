@@ -45,7 +45,7 @@ if __name__ == "__main__":
     # Plot results
     x_grid, t_grid = np.meshgrid(x, sol.t)
     fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
+    ax = fig.add_subplot(111, projection="3d")
     ax.plot_surface(x_grid, t_grid, sol.y.T, cmap="viridis")
 
     ax.set_xlim(0, x[-1])
