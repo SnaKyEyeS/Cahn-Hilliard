@@ -71,5 +71,5 @@ title = ax.text(.5, .1, "", bbox={'facecolor': 'w', 'alpha': 0.7, 'pad': 5}, tra
 
 # Start animation
 anim = FuncAnimation(fig, update, frames=int(n_step/skip_frame), interval=1, blit=True)
-# anim.save("cahn_hilliard_spectral.mp4")
+# anim.save("cahn_hilliard_spectral.mp4", fps=500)
 plt.show()
