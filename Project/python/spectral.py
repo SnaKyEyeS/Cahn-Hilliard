@@ -1,3 +1,4 @@
+from tqdm import tqdm
 import numpy as np
 
 import matplotlib.pyplot as plt
@@ -71,5 +72,8 @@ title = ax.text(.5, .1, "", bbox={'facecolor': 'w', 'alpha': 0.7, 'pad': 5}, tra
 
 # Start animation
 anim = FuncAnimation(fig, update, frames=int(n_step/skip_frame), interval=1, blit=True)
-# anim.save("cahn_hilliard_spectral.mp4", fps=500)
-plt.show()
+if True:
+    pbar = tqdm(total=int(n_step/skip_frame))
+    anim.save("cahn_hilliard_spectral.mp4", fps=500, progress_callback=lambda i, n: pbar.update(1))
+else:
+    plt.show()
