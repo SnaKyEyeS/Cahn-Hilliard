@@ -4,23 +4,15 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
 
-def init():
-    """
-    Animation initialization function
-    """
-    c[:, :] = 2*np.random.rand(n, n) - 1
-
-    img.set_data(c)
-    title.set_text("Time = 0")
-    return img, title,
-
-
 def update(i):
     """
     Animation update function
     """
-    img.set_data(next(sol))
-    title.set_text(f"Step = {i}/{n_step}")
+    for _ in range(skip_frame):
+        c = next(sol)
+
+    img.set_data(c)
+    title.set_text(f"Step = {i*skip_frame}/{n_step}")
     return img, title,
 
 
@@ -53,10 +45,11 @@ a = 1e-2
 n = 128
 dt = 1e-6
 n_step = 12000
+skip_frame = 10
 
 # Initialise vectors
 x, h = np.linspace(0, 1, n, endpoint=False, retstep=True)
-c = np.zeros((n, n))
+c = 2*np.random.rand(n, n) - 1
 sol = integrate(c)
 
 # Setup animation
@@ -65,7 +58,7 @@ img = ax.imshow(c, cmap="jet", vmin=-1, vmax=1)
 ax.axis("off")
 title = ax.text(.5, .1, "", bbox={'facecolor': 'w', 'alpha': 0.7, 'pad': 5}, transform=ax.transAxes, ha="center")
 
-# Start animation !
-# anim.save("cahn_hilliard_naive.gif", writer="imagemagick")
-anim = FuncAnimation(fig, update, init_func=init, frames=n_step, interval=1, blit=True)
+# Start animation
+anim = FuncAnimation(fig, update, frames=int(n_step/skip_frame), interval=1, blit=True)
+# anim.save("cahn_hilliard_naive.mp4")
 plt.show()
