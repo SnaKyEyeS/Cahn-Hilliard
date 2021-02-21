@@ -35,6 +35,9 @@ def integrate(c):
     """
     Time-stepping/integration scheme
     """
+    # Initial condition
+    yield c
+
     # Explicit Euler
     while True:
         c = c + dt*f(c)

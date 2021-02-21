@@ -41,6 +41,9 @@ def integrate(c):
     """
     Time-stepping/integration scheme
     """
+    # Initial condition
+    yield c
+
     # Runge-Kutta 4
     while True:
         k1 = f(c)
