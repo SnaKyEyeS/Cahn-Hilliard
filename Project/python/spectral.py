@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
-from scipy.fft import rfftn, irfftn, rfftfreq, fftfreq
+from scipy.fft import rfft2, irfft2, rfftfreq, fftfreq
 
 
 def update(i):
@@ -23,8 +23,8 @@ def laplacian(c):
     """
     Compute the Laplacian of c
     """
-    c_hat = rfftn(c, axes=(0, 1))
-    return irfftn(c_hat*k_deriv, axes=(0, 1)).real
+    c_hat = rfft2(c)
+    return irfft2(c_hat*k_deriv).real
 
 
 def f(c):
