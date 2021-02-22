@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
-from scipy.fftpack import fftn, ifftn, fftshift
+from scipy.fft import rfftn, irfftn, rfftfreq, fftfreq
 
 
 def update(i):
@@ -23,11 +23,8 @@ def laplacian(c):
     """
     Compute the Laplacian of c
     """
-    c_hat = fftshift(fftn(c))
-    k = np.arange(-n/2, n/2)
-    k_x, k_y = np.meshgrid(k, k)
-    c_hat_dot = -c_hat * (k_x**2 + k_y**2) * (2*np.pi/(n*h))**2
-    return ifftn(fftshift(c_hat_dot)).real
+    c_hat = rfftn(c, axes=(0, 1))
+    return irfftn(c_hat*k_deriv, axes=(0, 1)).real
 
 
 def f(c):
@@ -66,6 +63,11 @@ skip_frame = 10
 x, h = np.linspace(0, 1, n, endpoint=False, retstep=True)
 c = 2*np.random.rand(n, n) - 1
 sol = integrate(c)
+
+# Initialize wavelength for second derivative to avoid a repetitive operation
+# Since we use rfftn, one dim is n/2+1 (rfftfreq) and the other is n (fftfreq)
+k_x, k_y = np.meshgrid(rfftfreq(n, h/(2*np.pi)), fftfreq(n, h/(2*np.pi)))
+k_deriv = -(k_x**2 + k_y**2)
 
 # Initialize animation
 fig, ax = plt.subplots()

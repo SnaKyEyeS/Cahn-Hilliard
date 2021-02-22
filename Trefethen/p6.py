@@ -1,6 +1,6 @@
-from numpy import linspace, pi, sin, arange, zeros, meshgrid, array, exp
+from numpy import linspace, pi, sin, arange, zeros, meshgrid, exp
 import matplotlib.pyplot as plt
-from scipy.fftpack import fft, ifft
+from scipy.fft import rfft, irfft, rfftfreq
 
 
 # Grid & initial data
@@ -17,9 +17,9 @@ t = arange(0, t_max, step=dt)
 data = zeros((len(x), len(t)))
 data[:, 0] = v
 for i, _ in enumerate(t):
-    v_hat = fft(v)
-    w_hat = 1j*array([*arange(n/2), 0, *arange(-n/2+1, 0)])*v_hat
-    w = ifft(w_hat).real
+    v_hat = rfft(v)
+    w_hat = 1j*rfftfreq(n, h/(2*pi))*v_hat
+    w = irfft(w_hat).real
     v_new = v_old - 2*dt*c*w
     v_old = v
     v = v_new
