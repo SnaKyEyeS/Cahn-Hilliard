@@ -3,7 +3,7 @@ import warnings
 import numpy as np
 import matplotlib.pyplot as plt
 
-from scipy.fftpack import fft, ifft, fftshift
+from scipy.fft import rfft, irfft, rfftfreq
 
 
 def diff(func, start, end, N, n=None):
@@ -16,7 +16,7 @@ def diff(func, start, end, N, n=None):
     x = np.arange(start, end, step=h)
     f = func(x)
 
-    # Over/under sampling
+    # # Over/under sampling
     if n is None:
         n = int(N)
     else:
@@ -24,15 +24,19 @@ def diff(func, start, end, N, n=None):
         h = L/n
         x = np.arange(start, end, step=h)
 
-    # Compute FFT
-    f_hat = fftshift(fft(f)/N)
-    k = np.arange(-N/2, N/2)
+    # Fourier Transform
+    f_hat = rfft(f)
 
-    # Compute derivative
-    f_dot_hat = (1j*k) * f_hat
-    f_dot = ifft(fftshift(f_dot_hat), n=n)
+    # Wavelength
+    k = rfftfreq(N, h/(2*np.pi))
 
-    return x, f_dot.real * (2*np.pi/h)
+    # Derive f_hat
+    f_hat_dot = 1j*k*f_hat
+
+    # Inverse Fourier Transform
+    f_dot = irfft(f_hat_dot, n=n).real
+
+    return x, f_dot
 
 
 def rect(x, lim=1):
@@ -54,7 +58,7 @@ if __name__ == "__main__":
     f = lambda x: np.exp(np.sin(x))
 
     # Derive function
-    x, f_dot = diff(f, 0, 2*np.pi, 64, 128)
+    x, f_dot = diff(f, 0, 2*np.pi, 32, 64)
 
     plt.plot(x, f_dot)
     plt.plot(x, f(x)*np.cos(x))
