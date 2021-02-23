@@ -3,27 +3,40 @@ import warnings
 import numpy as np
 import matplotlib.pyplot as plt
 
-from scipy.fftpack import fft, ifft, fftshift
+from scipy.fft import rfft, irfft, rfftfreq
 
 
-def diff(func, start, end, N, order=1):
+def diff(func, start, end, N, n=None):
     """
     Return the 1-D derivative of f, of specified order.
     """
+    # Sample function f
     L = end - start
     h = L/N
     x = np.arange(start, end, step=h)
-
-    # Compute FFT
     f = func(x)
-    f_hat = fftshift(fft(f))
-    k = np.arange(-N/2, N/2)
 
-    # Compute derivative
-    f_dot_hat = (1j*k)**order * f_hat
-    f_dot = ifft(fftshift(f_dot_hat))
+    # # Over/under sampling
+    if n is None:
+        n = int(N)
+    else:
+        n = int(n)
+        h = L/n
+        x = np.arange(start, end, step=h)
 
-    return x, f_dot.real * (2*np.pi/L)**order
+    # Fourier Transform
+    f_hat = rfft(f)
+
+    # Wavelength
+    k = rfftfreq(N, h/(2*np.pi))
+
+    # Derive f_hat
+    f_hat_dot = 1j*k*f_hat
+
+    # Inverse Fourier Transform
+    f_dot = irfft(f_hat_dot, n=n).real
+
+    return x, f_dot
 
 
 def rect(x, lim=1):
@@ -48,6 +61,6 @@ if __name__ == "__main__":
     x, f_dot = diff(rect, -2*np.pi, 2*np.pi, 10000000, order=1)
 
     plt.plot(x, f_dot)
-    # plt.plot(x, f(x)*np.cos(x))
+    plt.plot(x, f(x)*np.cos(x))
     # plt.plot(x, f(x)*(np.cos(x)**2 - np.sin(x)))
     plt.show()
