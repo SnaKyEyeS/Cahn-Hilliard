@@ -1,7 +1,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "./matplotlib-cpp-master/matplotlibcpp.h"
+#include "matplotlibcpp.h"
 #include "functions.h"
 
 namespace plt = matplotlibcpp;
@@ -31,7 +31,7 @@ int main(int argc, char *argv[]){
   //init C
   double* C = (double*)calloc(n*n, sizeof(double));
 
-  //float* plot_C = (float*)calloc(n*n, sizeof(float));
+  float* plot_C = (float*)calloc(n*n, sizeof(float));
 
   for(int i=0; i<n*n; i++){
     C[i] = 2.0*((double)rand() / (double)RAND_MAX ) - 1.0;
@@ -42,22 +42,22 @@ int main(int argc, char *argv[]){
 
     C = RungeKutta4(C, dt, a);
 
-    // if(t%skip_frame == 0){
-    //
-    //   for(int i=0; i<n*n; i++){
-    //     plot_C[i] = float(C[i]);
-    //   }
-    //
-    //   plt::clf();
-    //
-  	// 	sprintf(title, "Time = %f", t*dt*skip_frame);
-  	// 	const int colors = 1;
-    //
-    //   plt::title(title);
-    //   plt::imshow(&(plot_C[0]), 128, 128, colors);
-    //
-    //   // Show plots
-    //   plt::pause(0.1);
-    // }
+    if(t%skip_frame == 0){
+
+      for(int i=0; i<n*n; i++){
+        plot_C[i] = float(C[i]);
+      }
+
+      plt::clf();
+
+  		sprintf(title, "Time = %f", t*dt*skip_frame);
+  		const int colors = 1;
+
+      plt::title(title);
+      plt::imshow(&(plot_C[0]), 128, 128, colors);
+
+      // Show plots
+      plt::pause(0.1);
+    }
   }
 }
