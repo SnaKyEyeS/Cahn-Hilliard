@@ -5,8 +5,6 @@
 
 double* RungeKutta4(double* C, double dt, double a){
 
-  int N = sizeof(C)/sizeof(C[0]);
-
   double* Cnext = (double*)calloc(N*N, sizeof(double));
 
   double* K1 = (double*)calloc(N*N,sizeof(double));
@@ -38,20 +36,50 @@ double* RungeKutta4(double* C, double dt, double a){
 }
 
 double* f(double* C, double a){
-  int N = sizeof(C)/sizeof(C[0]);
 
-  double* array = (double*)calloc(N*N, sizeof(double)); // si tu trouves un meilleur nom que array hésites pas haha
+  double* delsq = (double*)malloc(N*N*sizeof(double)); // si tu trouves un meilleur nom que array hésites pas haha
 
-  array = laplacian(C);
-
+  laplacian(C, 1.0/(N-1), delsq);
   for(int i=0; i<N*N; i++){
-    array[i] = pow(C[i],3) - C[i] - a*a*array[i];
+    C[i] = pow(C[i],3) - C[i] - a*a*delsq[i];
   }
+  laplacian(C, 1.0/(N-1), delsq);
 
-  return laplacian(array);
+  return delsq;
 
 }
 
-double* laplacian(double* C){
-  return C;
+void laplacian(double* u, double h, double* delsq){
+
+    fftw_complex spectrum[N*(N/2+1)];
+    fftw_plan thePlan;
+
+    // Forward 2D real-valued FFT
+    thePlan = fftw_plan_dft_r2c_2d(N, N, u, spectrum, FFTW_ESTIMATE);
+    fftw_execute(thePlan);
+
+    // Take the derivative
+    int l, ind;
+    double k;
+    double factor = .25*h*h / (M_PI*M_PI);
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N/2+1; j++) {
+
+            // Wavenumber
+            l = (i < N/2) ? i : i-N;
+            k = -factor * (j*j + l*l);
+
+            // Multiply by (ik)²
+            ind = i*(N/2+1)+j;
+            spectrum[ind][REAL] = k*spectrum[ind][REAL];
+            spectrum[ind][CPLX] = k*spectrum[ind][CPLX];
+        }
+    }
+
+    // Backward 2D real-valued FFT
+    thePlan = fftw_plan_dft_c2r_2d(N, N, spectrum, delsq, FFTW_ESTIMATE);
+    fftw_execute(thePlan);
+
+    // Free memory
+    fftw_destroy_plan(thePlan);
 }
