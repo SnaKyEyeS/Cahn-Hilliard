@@ -1,7 +1,5 @@
 #include "functions.h"
-#include <math.h>
-#include <stdlib.h>
-#include <stdio.h>
+
 
 double* RungeKutta4(double* C, double dt, double a){
 
@@ -51,12 +49,9 @@ double* f(double* C, double a){
 
 void laplacian(double* u, double h, double* delsq){
 
-    fftw_complex spectrum[N*(N/2+1)];
-    fftw_plan thePlan;
-
     // Forward 2D real-valued FFT
-    thePlan = fftw_plan_dft_r2c_2d(N, N, u, spectrum, FFTW_ESTIMATE);
-    fftw_execute(thePlan);
+    memcpy(rval, u, N*N*sizeof(double));
+    fftw_execute(rfft2);
 
     // Take the derivative
     int l, ind;
@@ -71,15 +66,12 @@ void laplacian(double* u, double h, double* delsq){
 
             // Multiply by (ik)²
             ind = i*(N/2+1)+j;
-            spectrum[ind][REAL] = k*spectrum[ind][REAL];
-            spectrum[ind][CPLX] = k*spectrum[ind][CPLX];
+            cval[ind][REAL] = k*cval[ind][REAL];
+            cval[ind][CPLX] = k*cval[ind][CPLX];
         }
     }
 
     // Backward 2D real-valued FFT
-    thePlan = fftw_plan_dft_c2r_2d(N, N, spectrum, delsq, FFTW_ESTIMATE);
-    fftw_execute(thePlan);
-
-    // Free memory
-    fftw_destroy_plan(thePlan);
+    fftw_execute(irfft2);
+    memcpy(delsq, rval, N*N*sizeof(double));
 }
