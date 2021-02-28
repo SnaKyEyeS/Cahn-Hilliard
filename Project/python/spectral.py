@@ -67,6 +67,7 @@ sol = integrate(c)
 # Initialize wavelength for second derivative to avoid a repetitive operation
 # Since we use rfftn, one dim is n/2+1 (rfftfreq) and the other is n (fftfreq)
 k_x, k_y = np.meshgrid(rfftfreq(n, h/(2*np.pi)), fftfreq(n, h/(2*np.pi)))
+print(k_x, k_y)
 k_deriv = -(k_x**2 + k_y**2)
 
 # Initialize animation
