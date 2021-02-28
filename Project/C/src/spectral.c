@@ -1,6 +1,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <fftw3.h>
 #include "matplotlibcpp.h"
 #include "functions.h"
 
