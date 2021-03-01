@@ -41,7 +41,7 @@ void f(double* c, double* dc) {
 
     laplacian(c, 1.0/(N-1), delsq);
     for(int i = 0; i < N*N; i++) {
-        c[i] = c[i]*c[i]*c[i] - c[i] - A*A*delsq[i];
+        delsq[i] = c[i]*c[i]*c[i] - c[i] - A*A*delsq[i];
     }
     laplacian(delsq, 1.0/(N-1), dc);
 }
