@@ -1,56 +1,59 @@
 #include "functions.h"
 
 
-double* RungeKutta4(double* C, double dt, double a){
+/*
+ *  Compute one iteration of Runge Kutta 4
+ *  Return value is done in-place.
+ */
+void RungeKutta4(double* c, double dt){
+    // K1
+    f(c, k1);
 
-  double* Cnext = (double*)calloc(N*N, sizeof(double));
+    // K2
+    for(int i=0; i<N*N; i++){
+        tmp[i] = c[i] + (dt/2.0)*k1[i];
+    }
+    f(tmp, k2);
 
-  double* K1 = (double*)calloc(N*N,sizeof(double));
-  double* K2 = (double*)calloc(N*N,sizeof(double));
-  double* K3 = (double*)calloc(N*N,sizeof(double));
-  double* K4 = (double*)calloc(N*N,sizeof(double));
+    // K3
+    for(int i=0; i<N*N; i++){
+        tmp[i] = c[i] + (dt/2.0)*k2[i];
+    }
+    f(tmp, k3);
 
-  K1 = f(C, a);
-  for(int i=0; i<N*N; i++){
-      Cnext[i] = C[i] + (1.0/2.0)*K1[i];
-  }
+    // K4
+    for(int i=0; i<N*N; i++){
+        tmp[i] = c[i] + dt*k3[i];
+    }
+    f(tmp, k4);
 
-  K2 = f(Cnext, a);
-  for(int i=0; i<N*N; i++){
-      Cnext[i] = C[i] + (1.0/2.0)*K2[i];
-  }
-
-  K3 = f(Cnext, a);
-  for(int i=0; i<N*N; i++){
-      Cnext[i] = C[i] + K3[i];
-  }
-
-  K4 = f(Cnext, a);
-
-  for(int i=0; i<N*N; i++){
-      Cnext[i] = C[i] + (1.0/6.0)*(K1[i]+2*K2[i]+2*K3[i]+K4[i]);
-  }
-  return Cnext;
+    // C_i+1
+    for(int i=0; i<N*N; i++){
+        c[i] = c[i] + (dt/6.0)*(k1[i]+2*k2[i]+2*k3[i]+k4[i]);
+    }
 }
 
-double* f(double* C, double a){
+/*
+ *  Compute the time derivative of c
+ *  Return value is not in-place.
+ */
+void f(double* c, double* dc) {
 
-  double* delsq = (double*)malloc(N*N*sizeof(double)); // si tu trouves un meilleur nom que array hésites pas haha
-
-  laplacian(C, 1.0/(N-1), delsq);
-  for(int i=0; i<N*N; i++){
-    C[i] = pow(C[i],3) - C[i] - a*a*delsq[i];
-  }
-  laplacian(C, 1.0/(N-1), delsq);
-
-  return delsq;
-
+    laplacian(c, 1.0/(N-1), delsq);
+    for(int i=0; i<N*N; i++){
+        c[i] = pow(c[i],3) - c[i] - A*A*delsq[i];
+    }
+    laplacian(c, 1.0/(N-1), dc);
 }
 
-void laplacian(double* u, double h, double* delsq){
+/*
+ *  Compute the 2-D, cartesian Laplacian of c
+ *  Return value is not in-place.
+ */
+void laplacian(double* c, double h, double* delsq){
 
     // Forward 2D real-valued FFT
-    memcpy(rval, u, N*N*sizeof(double));
+    memcpy(rval, c, N*N*sizeof(double));
     fftw_execute(rfft2);
 
     // Take the derivative
@@ -74,4 +77,26 @@ void laplacian(double* u, double h, double* delsq){
     // Backward 2D real-valued FFT
     fftw_execute(irfft2);
     memcpy(delsq, rval, N*N*sizeof(double));
+}
+
+/*
+ *  Free the various allocated arrays
+ */
+void free_functions() {
+    // RungeKutta4
+    free(k1);
+    free(k2);
+    free(k3);
+    free(k4);
+    free(tmp);
+
+    // f
+    free(delsq);
+
+    // laplacian
+    free(cval);
+    free(rval);
+    fftw_destroy_plan(rfft2);
+    fftw_destroy_plan(irfft2);
+    fftw_cleanup();
 }

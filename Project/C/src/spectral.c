@@ -37,10 +37,11 @@ int main(int argc, char *argv[]){
     C[i] = 2.0*((double)rand() / (double)RAND_MAX ) - 1.0;
   }
 
+
   //loop on time:
   for(int t=0; t<n_step; t++){
 
-    C = RungeKutta4(C, dt, a);
+    RungeKutta4(C, dt);
 
     if(t%skip_frame == 0){
 
@@ -50,14 +51,17 @@ int main(int argc, char *argv[]){
 
       plt::clf();
 
-  		sprintf(title, "Time = %f", t*dt*skip_frame);
+  		sprintf(title, "Time = %f", t*dt);
   		const int colors = 1;
 
       plt::title(title);
       plt::imshow(&(plot_C[0]), N, N, colors);
 
       // Show plots
-      plt::pause(0.1);
+      plt::pause(1e-10);
     }
   }
+
+  free_functions();
+  return 1;
 }
