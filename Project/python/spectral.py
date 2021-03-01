@@ -15,7 +15,7 @@ def update(i):
         c = next(sol)
 
     img.set_data(c)
-    title.set_text(f"Step = {i*skip_frame}/{n_step}")
+    title.set_text(f"Time = {i*skip_frame*dt:.6f}")
     return img, title,
 
 
@@ -72,6 +72,7 @@ k_deriv = -(k_x**2 + k_y**2)
 # Initialize animation
 fig, ax = plt.subplots()
 img = ax.imshow(c, cmap="jet", vmin=-1, vmax=1)
+fig.colorbar(img, ax=ax)
 ax.axis("off")
 title = ax.text(.5, .1, "", bbox={'facecolor': 'w', 'alpha': 0.7, 'pad': 5}, transform=ax.transAxes, ha="center")
 

@@ -36,7 +36,7 @@ int main(int argc, char *argv[]){
 
             // The stuff to plot
             ind = i*N + j;
-            z_row.push_back(df[ind]);
+            z_row.push_back(df[ind] + 2*cos(i*h)*sin(j*h));
         }
         x.push_back(x_row);
         y.push_back(y_row);

@@ -37,6 +37,10 @@ int main(int argc, char *argv[]){
     C[i] = 2.0*((double)rand() / (double)RAND_MAX ) - 1.0;
   }
 
+  // std::map<std::string, std::string> opt = {{"cmap", "jet"},};
+  std::map<std::string, std::string> opt = {{"cmap", "jet"}, {"vmin", "-1"}, {"vmax", "1"}};
+  PyObject *mat;
+
 
   //loop on time:
   for(int t=0; t<n_step; t++){
@@ -55,7 +59,8 @@ int main(int argc, char *argv[]){
   		const int colors = 1;
 
       plt::title(title);
-      plt::imshow(&(plot_C[0]), N, N, colors);
+      plt::imshow(plot_C, N, N, colors, opt, &mat);
+      plt::colorbar(mat);
 
       // Show plots
       plt::pause(1e-10);
