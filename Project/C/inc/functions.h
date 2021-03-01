@@ -25,7 +25,7 @@ static double* k4  = (double*) malloc(N*N*sizeof(double));
 static double* tmp = (double*) malloc(N*N*sizeof(double));
 
 // Temp variables for f function
-static double* delsq = (double *) malloc(N*N*sizeof(double));
+static double* delsq = (double*) malloc(N*N*sizeof(double));
 
 // FFT input & output variables (need to be initialised at the start)
 static fftw_complex *cval = fftw_alloc_complex(N*(N/2+1));
