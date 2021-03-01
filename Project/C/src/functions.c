@@ -10,26 +10,26 @@ void RungeKutta4(double* c, double dt){
     f(c, k1);
 
     // K2
-    for(int i=0; i<N*N; i++){
-        tmp[i] = c[i] + (dt/2.0)*k1[i];
+    for(int i = 0; i < N*N; i++) {
+        tmp[i] = c[i] + dt*k1[i]/2.0;
     }
     f(tmp, k2);
 
     // K3
-    for(int i=0; i<N*N; i++){
-        tmp[i] = c[i] + (dt/2.0)*k2[i];
+    for(int i = 0; i < N*N; i++) {
+        tmp[i] = c[i] + dt*k2[i]/2.0;
     }
     f(tmp, k3);
 
     // K4
-    for(int i=0; i<N*N; i++){
+    for(int i = 0; i < N*N; i++) {
         tmp[i] = c[i] + dt*k3[i];
     }
     f(tmp, k4);
 
     // C_i+1
-    for(int i=0; i<N*N; i++){
-        c[i] = c[i] + (dt/6.0)*(k1[i]+2*k2[i]+2*k3[i]+k4[i]);
+    for(int i = 0; i < N*N; i++) {
+        c[i] += dt*(k1[i] + 2*k2[i] + 2*k3[i] + k4[i])/6.0;
     }
 }
 
@@ -40,10 +40,10 @@ void RungeKutta4(double* c, double dt){
 void f(double* c, double* dc) {
 
     laplacian(c, 1.0/(N-1), delsq);
-    for(int i=0; i<N*N; i++){
-        c[i] = pow(c[i],3) - c[i] - A*A*delsq[i];
+    for(int i = 0; i < N*N; i++) {
+        c[i] = c[i]*c[i]*c[i] - c[i] - A*A*delsq[i];
     }
-    laplacian(c, 1.0/(N-1), dc);
+    laplacian(delsq, 1.0/(N-1), dc);
 }
 
 /*

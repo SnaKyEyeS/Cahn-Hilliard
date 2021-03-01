@@ -12,7 +12,7 @@ int main(int argc, char *argv[]){
   double a = 0.01;
   double dt = pow(10,-6)/4.0;
   int n_step = 12000*4;
-  int skip_frame = 10;
+  int skip_frame = 100;
   char title[50];
 
   //init X and h

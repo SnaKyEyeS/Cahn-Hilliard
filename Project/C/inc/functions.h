@@ -32,8 +32,8 @@ static fftw_complex *cval = fftw_alloc_complex(N*(N/2+1));
 static double       *rval = fftw_alloc_real(N*N);
 
 // FFTW plans for real-valued forward & backard 2-D DFT
-static const fftw_plan rfft2  = fftw_plan_dft_r2c_2d(N, N, rval, cval, FFTW_EXHAUSTIVE);
-static const fftw_plan irfft2 = fftw_plan_dft_c2r_2d(N, N, cval, rval, FFTW_EXHAUSTIVE);
+static const fftw_plan rfft2  = fftw_plan_dft_r2c_2d(N, N, rval, cval, FFTW_PATIENT);
+static const fftw_plan irfft2 = fftw_plan_dft_c2r_2d(N, N, cval, rval, FFTW_PATIENT);
 
 // TODO: it may be best to define the FFTW plans in the main function
 // so we can properly destroy them, etc.
