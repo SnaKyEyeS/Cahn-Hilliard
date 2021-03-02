@@ -1,12 +1,15 @@
 #include "BOV.h"
 #include <time.h>
 #include <math.h>
-// #include "functions.h"
+#include "functions.h"
 
 int main(int argc, char* argv[]) {
 
-    // Size of simulation
-    int n = 128;
+    // Simulation parameters
+    int n = N;
+    int t = 0;
+    double dt = 1e-6/4;
+    double skip = 10;
 
     // Create window
     bov_window_t* window = bov_window_new(n, n, "LMECA2300");
@@ -15,7 +18,8 @@ int main(int argc, char* argv[]) {
     window->param.translate[1] = -n/2.0;
     bov_window_set_color(window, (GLfloat[4]) {0.3, 0.3, 0.3, 1});
 
-    // Init C
+    // Init
+    init_functions();
     double *c = (double*) malloc(n*n*sizeof(double));
     for (int i = 0; i < n*n; i++) {
         c[i] = 2.0*((double)rand() / (double)RAND_MAX ) - 1.0;
@@ -32,6 +36,12 @@ int main(int argc, char* argv[]) {
 
         // Update
         bov_window_update(window);
+
+        // Timestepping
+        for (int i = 0; i < skip; i++) {
+            RungeKutta4(c, 1e-6/4);
+            t++;
+        }
 
         // Draw points
         for (float i = 0.0; i < n; i++) {
@@ -73,12 +83,13 @@ int main(int argc, char* argv[]) {
         }
 
         end = clock();
-        printf("Time = %f\n", (double)(end-begin)/CLOCKS_PER_SEC);
+        // printf("Time = %f\n", (double)(end-begin)/CLOCKS_PER_SEC);
+        printf("Time = %.6f\n", t*dt);
 
     } while(!bov_window_should_close(window));
 
 
     bov_window_delete(window);
-
+    free_functions();
     return EXIT_SUCCESS;
 }

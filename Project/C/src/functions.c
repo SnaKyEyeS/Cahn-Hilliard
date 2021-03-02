@@ -80,6 +80,24 @@ void laplacian(double* c, double h, double* delsq){
 }
 
 /*
+ *  Initialise the various stuff
+ */
+void init_functions() {
+    k1 = (double*) malloc(N*N*sizeof(double));
+    k2 = (double*) malloc(N*N*sizeof(double));
+    k3 = (double*) malloc(N*N*sizeof(double));
+    k4 = (double*) malloc(N*N*sizeof(double));
+    tmp = (double*) malloc(N*N*sizeof(double));
+    delsq = (double*) malloc(N*N*sizeof(double));
+
+    cval = fftw_alloc_complex(N*(N/2+1));
+    rval = fftw_alloc_real(N*N);
+
+    rfft2  = fftw_plan_dft_r2c_2d(N, N, rval, cval, FFTW_PATIENT);
+    irfft2 = fftw_plan_dft_c2r_2d(N, N, cval, rval, FFTW_PATIENT);
+}
+
+/*
  *  Free the various allocated arrays
  */
 void free_functions() {

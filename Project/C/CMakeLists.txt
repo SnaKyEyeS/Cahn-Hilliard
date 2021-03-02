@@ -27,8 +27,8 @@ include_directories(${OPENGL_INCLUDE_DIR})
 add_subdirectory(${PROJECT_SOURCE_DIR}/deps/bov)
 
 # Project files
-# include_directories(${PROJECT_SOURCE_DIR}/src ${PROJECT_SOURCE_DIR}/inc)
-file(GLOB C_SRCS "${PROJECT_SOURCE_DIR}/src/spectral.c")
+include_directories(${PROJECT_SOURCE_DIR}/src ${PROJECT_SOURCE_DIR}/inc)
+file(GLOB C_SRCS "${PROJECT_SOURCE_DIR}/src/*.c")
 
 # Compile/link src files & libs
 add_executable(${EXEC_NAME} ${C_SRCS})
