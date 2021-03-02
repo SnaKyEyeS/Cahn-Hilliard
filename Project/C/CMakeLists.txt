@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 3.12.2)
 
 # Project name
-project(LMECA2300)
+project(LMECA2300 C)
 
 # Exec name
 set(EXEC_NAME project)
@@ -28,7 +28,7 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/deps/bov)
 
 # Project files
 # include_directories(${PROJECT_SOURCE_DIR}/src ${PROJECT_SOURCE_DIR}/inc)
-file(GLOB C_SRCS "${PROJECT_SOURCE_DIR}/src/*.c")
+file(GLOB C_SRCS "${PROJECT_SOURCE_DIR}/src/spectral.c")
 
 # Compile/link src files & libs
 add_executable(${EXEC_NAME} ${C_SRCS})
