@@ -12,20 +12,18 @@ int main(int argc, char *argv[]){
 
     // Initialise value
     int ind;
-    double h = 2*M_PI/N;
-    double *f_ = (double *)malloc(N*N*sizeof(double));
+    double h = 1.0/N;
+    double *f = (double *)malloc(N*N*sizeof(double));
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
             ind = i*N + j;
-            f_[ind] = cos(i*h)*sin(j*h);
+            f[ind] = cos(2*i*h*M_PI)*sin(2*j*h*M_PI);
         }
     }
 
     // Spectral derivative
     double *df = (double *)malloc(N*N*sizeof(double));
-    f(f_, df);
-
-    // laplacian(f, h, df);
+    laplacian(f, h, df);
 
     // Construct x, y, z
     std::vector<std::vector<double>> x, y, z;
@@ -38,7 +36,7 @@ int main(int argc, char *argv[]){
 
             // The stuff to plot
             ind = i*N + j;
-            z_row.push_back(df[ind]);
+            z_row.push_back(df[ind] + 8*M_PI*M_PI*f[ind]);
         }
         x.push_back(x_row);
         y.push_back(y_row);

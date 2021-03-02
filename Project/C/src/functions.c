@@ -39,11 +39,11 @@ void RungeKutta4(double* c, double dt){
  */
 void f(double* c, double* dc) {
 
-    laplacian(c, 1.0/(N-1), delsq);
+    laplacian(c, 1.0/N, delsq);
     for(int i = 0; i < N*N; i++) {
         delsq[i] = c[i]*c[i]*c[i] - c[i] - A*A*delsq[i];
     }
-    laplacian(delsq, 1.0/(N-1), dc);
+    laplacian(delsq, 1.0/N, dc);
 }
 
 /*
@@ -59,7 +59,7 @@ void laplacian(double* c, double h, double* delsq){
     // Take the derivative
     int l, ind;
     double k;
-    double factor = .25*h*h / (M_PI*M_PI);
+    double factor = 4*M_PI*M_PI*h*h;
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < N/2+1; j++) {
 
