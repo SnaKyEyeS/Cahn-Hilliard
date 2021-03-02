@@ -17,7 +17,7 @@ int main(int argc, char *argv[]){
 
   //init X and h
   double X_max = 1.0;
-  double step = X_max/double(N-1);
+  double step = X_max/N;
 
   double* X = (double*)calloc(N, sizeof(double));
   double* h = (double*)calloc(N, sizeof(double));
