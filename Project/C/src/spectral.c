@@ -12,7 +12,7 @@ int main(int argc, char* argv[]) {
     double skip = 10;
 
     // Create window
-    bov_window_t* window = bov_window_new(n, n, "LMECA2300");
+    bov_window_t* window = bov_window_new(500, 500, "LMECA2300");
     window->param.zoom = 2.0/n;
     window->param.translate[0] = -n/2.0;
     window->param.translate[1] = -n/2.0;
@@ -32,16 +32,8 @@ int main(int argc, char* argv[]) {
     GLfloat data[5][3];
 
     do {
-        begin = clock();
-
         // Update
         bov_window_update(window);
-
-        // Timestepping
-        for (int i = 0; i < skip; i++) {
-            RungeKutta4(c, 1e-6/4);
-            t++;
-        }
 
         // Draw points
         for (float i = 0.0; i < n; i++) {
@@ -82,9 +74,16 @@ int main(int argc, char* argv[]) {
             }
         }
 
-        end = clock();
+        // Timestepping
+        for (int i = 0; i < skip; i++) {
+            RungeKutta4(c, 1e-6/4);
+            t++;
+        }
+
+        // begin = clock();
+        // end = clock();
         // printf("Time = %f\n", (double)(end-begin)/CLOCKS_PER_SEC);
-        printf("Time = %.6f\n", t*dt);
+        printf("Iter = %5d; Time = %.6f\n", t, t*dt);
 
     } while(!bov_window_should_close(window));
 
