@@ -6,6 +6,7 @@ project(LMECA2300 C)
 
 # Exec name
 set(EXEC_NAME project)
+set(CMAKE_C_FLAGS "-O3")
 
 # CMake module
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")

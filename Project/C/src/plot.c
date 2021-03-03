@@ -4,7 +4,7 @@
 void imshow(bov_window_t *w, double *z, int n1, int n2) {
 
     // Init stuff
-    float none[4] = {0.0,0.0,0.0,1};
+    float none[4] = {0.0,0.0,0.0,0.0};
     float color;
     GLfloat data[5][3];
 
@@ -34,7 +34,7 @@ void imshow(bov_window_t *w, double *z, int n1, int n2) {
             data[4][1] = j;
             data[4][2] = color;
 
-            bov_points_t* points = bov_points_new_with_value(data, 5, GL_DYNAMIC_DRAW);
+            bov_points_t* points = bov_points_new_with_value(data, 5, GL_STREAM_DRAW);
             bov_points_set_color(points, none);
             bov_points_set_width(points, 0);
             bov_points_set_outline_color(points, none);

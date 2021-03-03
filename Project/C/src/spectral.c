@@ -33,10 +33,10 @@ int main(int argc, char* argv[]) {
         bov_window_update(window);
 
         // Draw points
-        // begin = clock();
+        begin = clock();
         imshow(window, c, n, n);
-        // end = clock();
-        // printf("Time = %f\n", (double)(end-begin)/CLOCKS_PER_SEC);
+        end = clock();
+        printf("Time = %f\n", (double)(end-begin)/CLOCKS_PER_SEC);
 
         // Timestepping
         for (int i = 0; i < skip; i++) {

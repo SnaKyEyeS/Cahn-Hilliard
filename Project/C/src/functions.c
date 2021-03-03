@@ -83,11 +83,11 @@ void laplacian(double* c, double h, double* delsq){
  *  Initialise the various stuff
  */
 void init_functions() {
-    k1 = (double*) malloc(N*N*sizeof(double));
-    k2 = (double*) malloc(N*N*sizeof(double));
-    k3 = (double*) malloc(N*N*sizeof(double));
-    k4 = (double*) malloc(N*N*sizeof(double));
-    tmp = (double*) malloc(N*N*sizeof(double));
+    k1    = (double*) malloc(N*N*sizeof(double));
+    k2    = (double*) malloc(N*N*sizeof(double));
+    k3    = (double*) malloc(N*N*sizeof(double));
+    k4    = (double*) malloc(N*N*sizeof(double));
+    tmp   = (double*) malloc(N*N*sizeof(double));
     delsq = (double*) malloc(N*N*sizeof(double));
 
     cval = fftw_alloc_complex(N*(N/2+1));
