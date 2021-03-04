@@ -171,7 +171,7 @@ int main() {
 
         // Timestepping
         for (int i = 0; i < skip; i++) {
-            RungeKutta4(c, 1e-6/4);
+            RungeKutta4(c, dt);
             t++;
         }
 
