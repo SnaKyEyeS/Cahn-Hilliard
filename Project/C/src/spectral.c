@@ -160,7 +160,6 @@ int main() {
     glVertexAttribPointer(colAttrib, 1, GL_FLOAT, GL_FALSE, 0, (void*)(0*sizeof(GLfloat)));
 
 
-    int ind;
     clock_t begin, end;
     while(!glfwWindowShouldClose(window)) {
         glfwSwapBuffers(window);
@@ -177,22 +176,21 @@ int main() {
         }
 
         // Update plot
-        begin = clock();
-        for (int i = 0; i < N; i++) {
-            for (int j = 0; j < N; j++) {
-                ind = i*N+j;
-                colors[ind] = (float) ((c[ind] + 1.0)/2.0);
-            }
+        // begin = clock();
+        for (int i = 0; i < N*N; i++) {
+            colors[i] = (float) ((c[i] + 1.0)/2.0);
         }
+
         glBindBuffer(GL_ARRAY_BUFFER, vbo_colors);
         glBufferData(GL_ARRAY_BUFFER, sizeof(colors), colors, GL_STREAM_DRAW);
 
 
-        // Draw a triangle from the 3 vertices
-        glDrawElements(GL_TRIANGLES, 6*(N-1)*(N-1)-3, GL_UNSIGNED_INT, 0);
+        // Draw elements
+        glDrawElements(GL_TRIANGLES, 6*(N-1)*(N-1), GL_UNSIGNED_INT, 0);
 
-        end = clock();
-        printf("Time = %f\n", (double)(end-begin)/CLOCKS_PER_SEC);
+        // end = clock();
+        // printf("Time = %f\n", (double)(end-begin)/CLOCKS_PER_SEC);
+        printf("Iter = %5d; Time = %.6f\n", t, t*dt);
 
 
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
