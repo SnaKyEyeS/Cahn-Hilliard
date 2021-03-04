@@ -90,8 +90,8 @@ int main() {
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
             int ind = i*N+j;
-            positions[2*ind  ] = (float)(-1.0 + 2.0*i/N + 2.0*i/(N*N) + 2.0*i/(N*N*N) + 2.0*i/(N*N*N*N));
-            positions[2*ind+1] = (float)(-1.0 + 2.0*j/N + 2.0*j/(N*N) + 2.0*j/(N*N*N) + 2.0*j/(N*N*N*N));
+            positions[2*ind  ] = (float)(-1.0 + 2.0*i/(N-1));
+            positions[2*ind+1] = (float)(-1.0 + 2.0*j/(N-1));
         }
     }
 
