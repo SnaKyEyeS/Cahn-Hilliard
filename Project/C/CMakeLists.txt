@@ -20,6 +20,14 @@ set(LIBM_LIBRARIES m)
 find_package(FFTW REQUIRED)
 include_directories(${FFTW_INCLUDE_DIRS})
 
+# GLEW
+find_package(GLEW REQUIRED)
+include_directories(${GLEW_INCLUDE_DIRS})
+
+# GLFW3
+find_package(GLFW3 REQUIRED)
+include_directories(${GLFW3_INCLUDE_DIR})
+
 # OpenGL
 find_package(OpenGL REQUIRED)
 include_directories(${OPENGL_INCLUDE_DIR})
@@ -37,6 +45,8 @@ target_link_libraries(
     ${EXEC_NAME}
     ${LIBM_LIBRARIES}
     ${FFTW_LIBRARIES}
-    ${OPENGL_gl_LIBRARY}
+    ${GLEW_LIBRARIES}
+    ${GLFW3_LIBRARY}
+    ${OPENGL_LIBRARY}
     bov
 )
