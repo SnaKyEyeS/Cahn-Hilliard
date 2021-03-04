@@ -23,8 +23,7 @@ def laplacian(c):
     """
     Compute the Laplacian of c
     """
-    c_hat = rfft2(c)
-    return irfft2(c_hat*k_deriv).real
+    return irfft2(k_deriv*rfft2(c)).real
 
 
 def f(c):
@@ -47,7 +46,7 @@ def integrate(c):
         k2 = f(c + dt*k1/2)
         k3 = f(c + dt*k2/2)
         k4 = f(c + dt*k3)
-        c = c + dt*(k1 + 2*k2 + 2*k3 + k4)/6
+        c += dt*(k1 + 2*k2 + 2*k3 + k4)/6
 
         yield c
 

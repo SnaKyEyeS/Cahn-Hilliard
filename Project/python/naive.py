@@ -13,7 +13,7 @@ def update(i):
         c = next(sol)
 
     img.set_data(c)
-    title.set_text(f"Step = {i*skip_frame}/{n_step}")
+    title.set_text(f"Time = {i*skip_frame*dt:.6f}")
     return img, title,
 
 
@@ -40,7 +40,7 @@ def integrate(c):
 
     # Explicit Euler
     while True:
-        c = c + dt*f(c)
+        c += dt*f(c)
         yield c
 
 
@@ -56,9 +56,10 @@ x, h = np.linspace(0, 1, n, endpoint=False, retstep=True)
 c = 2*np.random.rand(n, n) - 1
 sol = integrate(c)
 
-# Setup animation
+# Initialize animation
 fig, ax = plt.subplots()
 img = ax.imshow(c, cmap="jet", vmin=-1, vmax=1)
+fig.colorbar(img, ax=ax)
 ax.axis("off")
 title = ax.text(.5, .1, "", bbox={'facecolor': 'w', 'alpha': 0.7, 'pad': 5}, transform=ax.transAxes, ha="center")
 
