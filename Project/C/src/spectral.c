@@ -43,7 +43,7 @@ const GLchar* fragmentSource = R"glsl(
 )glsl";
 
 
-int main() {
+int main(int argc, char* argv[]) {
 
     // Init GLFW & window
     glfwInit();
@@ -141,7 +141,7 @@ int main() {
 
     // Create a Vertex Buffer Object for colors
     GLuint vbo_colors;
-    glGenBuffers(2, &vbo_colors);
+    glGenBuffers(1, &vbo_colors);
 
     GLfloat colors[N*N];
     for (int i = 0; i < N; i++) {
@@ -198,6 +198,20 @@ int main() {
     }
 
 
+    glDeleteProgram(shaderProgram);
+    glDeleteShader(fragmentShader);
+    glDeleteShader(vertexShader);
+
+    glDeleteBuffers(1, &ebo);
+    glDeleteBuffers(1, &vbo_pos);
+    glDeleteBuffers(1, &vbo_colors);
+
+    glDeleteVertexArrays(1, &vao);
+
+    glfwDestroyWindow(window);
     glfwTerminate();
-    return 0;
+    free_functions();
+    free(c);
+
+    return EXIT_SUCCESS;
 }
