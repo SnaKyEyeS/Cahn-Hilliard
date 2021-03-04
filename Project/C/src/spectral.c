@@ -1,72 +1,55 @@
+#include "BOV.h"
+#include <time.h>
 #include <math.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include "matplotlibcpp.h"
 #include "functions.h"
-#include "const.h"
+#include "plot.h"
 
-namespace plt = matplotlibcpp;
+int main(int argc, char* argv[]) {
 
-int main(int argc, char *argv[]){
-  // parameters
-  double a = 0.01;
-  double dt = pow(10,-6)/4.0;
-  int n_step = 12000*4;
-  int skip_frame = 100;
-  char title[50];
+    // Simulation parameters
+    int n = N;
+    int t = 0;
+    double dt = 1e-6/4;
+    double skip = 10;
 
-  //init X and h
-  double X_max = 1.0;
-  double step = X_max/N;
+    // Create window
+    bov_window_t* window = bov_window_new(500, 500, "LMECA2300");
+    window->param.zoom = 2.0/n;
+    window->param.translate[0] = -n/2.0;
+    window->param.translate[1] = -n/2.0;
+    bov_window_set_color(window, (GLfloat[4]) {0.3, 0.3, 0.3, 1});
 
-  double* X = (double*)calloc(N, sizeof(double));
-  double* h = (double*)calloc(N, sizeof(double));
-
-  for(int i=0; i<N; i++){
-    X[i] = i*step;
-    h[i] = step;
-  }
-
-
-  //init C
-  double* C = (double*)calloc(N*N, sizeof(double));
-
-  float* plot_C = (float*)calloc(N*N, sizeof(float));
-
-  for(int i=0; i<N*N; i++){
-    C[i] = 2.0*((double)rand() / (double)RAND_MAX ) - 1.0;
-  }
-
-  // std::map<std::string, std::string> opt = {{"cmap", "jet"},};
-  std::map<std::string, std::string> opt = {{"cmap", "jet"}, {"vmin", "-1"}, {"vmax", "1"}};
-  PyObject *mat;
-
-
-  //loop on time:
-  for(int t=0; t<n_step; t++){
-
-    RungeKutta4(C, dt);
-
-    if(t%skip_frame == 0){
-
-      for(int i=0; i<N*N; i++){
-        plot_C[i] = float(C[i]);
-      }
-
-      plt::clf();
-
-  		sprintf(title, "Time = %f", t*dt);
-  		const int colors = 1;
-
-      plt::title(title);
-      plt::imshow(plot_C, N, N, colors, opt, &mat);
-      plt::colorbar(mat);
-
-      // Show plots
-      plt::pause(1e-10);
+    // Init
+    init_functions();
+    double *c = (double*) malloc(n*n*sizeof(double));
+    for (int i = 0; i < n*n; i++) {
+        c[i] = 2.0*((double)rand() / (double)RAND_MAX ) - 1.0;
     }
-  }
 
-  free_functions();
-  return 1;
+    // Graphical loop
+    clock_t begin, end;
+    do {
+        // Update
+        bov_window_update(window);
+
+        // Draw points
+        begin = clock();
+        imshow(window, c, n, n);
+        end = clock();
+        printf("Time = %f\n", (double)(end-begin)/CLOCKS_PER_SEC);
+
+        // Timestepping
+        for (int i = 0; i < skip; i++) {
+            RungeKutta4(c, 1e-6/4);
+            t++;
+        }
+
+        printf("Iter = %5d; Time = %.6f\n", t, t*dt);
+
+    } while(!bov_window_should_close(window));
+
+
+    bov_window_delete(window);
+    free_functions();
+    return EXIT_SUCCESS;
 }
