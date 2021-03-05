@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <time.h>
 #include "functions.h"
+#include "window.h"
 
 
 // Shader sources
@@ -45,19 +46,8 @@ const GLchar* fragmentSource = R"glsl(
 
 int main(int argc, char* argv[]) {
 
-    // Init GLFW & window
-    glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-    glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
-    GLFWwindow* window = glfwCreateWindow(800, 800, "OpenGL", NULL, NULL);
-    glfwMakeContextCurrent(window);
-
-    // Init GLEW
-    glewExperimental = GL_TRUE;
-    glewInit();
+    // Initialise window
+    GLFWwindow *window = init_window();
 
     // Create Vertex Array Object
     GLuint vao;
@@ -190,7 +180,7 @@ int main(int argc, char* argv[]) {
 
         // end = clock();
         // printf("Time = %f\n", (double)(end-begin)/CLOCKS_PER_SEC);
-        printf("Iter = %5d; Time = %.6f\n", t, t*dt);
+        // printf("Iter = %5d; Time = %.6f\n", t, t*dt);
 
 
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
