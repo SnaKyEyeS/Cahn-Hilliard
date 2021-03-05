@@ -91,7 +91,7 @@ int main(int argc, char* argv[]) {
     // Specify vbo_pos' layout
     GLint posAttrib = glGetAttribLocation(shaderProgram, "position");
     glEnableVertexAttribArray(posAttrib);
-    glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
     // Create an Element Buffer Object and copy the element data to it
     GLuint ebo;
@@ -147,7 +147,7 @@ int main(int argc, char* argv[]) {
     // Specify vbo_color's layout
     GLint colAttrib = glGetAttribLocation(shaderProgram, "color");
     glEnableVertexAttribArray(colAttrib);
-    glVertexAttribPointer(colAttrib, 1, GL_FLOAT, GL_FALSE, 0, (void*)(0*sizeof(GLfloat)));
+    glVertexAttribPointer(colAttrib, 1, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
 
     clock_t begin, end;
