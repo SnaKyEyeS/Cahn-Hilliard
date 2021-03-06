@@ -7,8 +7,8 @@ void imshow(bov_window_t *w, double *z, int n1, int n2) {
     float none[4] = {0.0,0.0,0.0,0.0};
     GLfloat data[5][3];
 
-    for (float i = 0.0; i < n1; i++) {
-        for (float j = 0.0; j < n2; j++) {
+    for (float i = 0.0; i < n1-1; i++) {
+        for (float j = 0.0; j < n2-1; j++) {
 
             int ind = i*n2+j;
 
