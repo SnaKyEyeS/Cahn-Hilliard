@@ -35,24 +35,16 @@ const GLchar* geometrySource = R"glsl(
         float color;
     } gs_in[];
 
-    out float color;
+    out GS_OUT {
+        float color;
+    } gs_out;
 
     void main() {
-        gl_Position = gl_in[0].gl_Position;
-        color = gs_in[0].color;
-        EmitVertex();
-
-        gl_Position = gl_in[1].gl_Position;
-        color = gs_in[1].color;
-        EmitVertex();
-
-        gl_Position = gl_in[2].gl_Position;
-        color = gs_in[2].color;
-        EmitVertex();
-
-        gl_Position = gl_in[3].gl_Position;
-        color = gs_in[3].color;
-        EmitVertex();
+        for (int i = 0; i < 4; i++) {
+            gl_Position = gl_in[i].gl_Position;
+            gs_out.color = gs_in[i].color;
+            EmitVertex();
+        }
 
         EndPrimitive();
     }
@@ -61,9 +53,11 @@ const GLchar* geometrySource = R"glsl(
 const GLchar* fragmentSource = R"glsl(
     #version 460 core
 
-    in float color;
+    in GS_OUT {
+        float color;
+    } fs_in;
 
-    out vec4 fragColor;
+    out vec4 color;
 
     vec4 turbo(float x) {
         const vec4 kRedVec4 = vec4(0.13572138, 4.61539260, -42.66032258, 132.13108234);
@@ -85,7 +79,7 @@ const GLchar* fragmentSource = R"glsl(
     }
 
     void main() {
-        fragColor = turbo(color);
+        color = turbo(fs_in.color);
     }
 )glsl";
 
@@ -120,7 +114,7 @@ int main(int argc, char* argv[]) {
     glAttachShader(shaderProgram, vertexShader);
     glAttachShader(shaderProgram, geometryShader);
     glAttachShader(shaderProgram, fragmentShader);
-    glBindFragDataLocation(shaderProgram, 0, "fragColor");
+    glBindFragDataLocation(shaderProgram, 0, "color");
     glLinkProgram(shaderProgram);
     glUseProgram(shaderProgram);
 
