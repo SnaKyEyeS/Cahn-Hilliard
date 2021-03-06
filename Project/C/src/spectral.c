@@ -11,19 +11,56 @@
 // Shader sources
 const GLchar* vertexSource = R"glsl(
     #version 460 core
+
     in vec2 position;
     in float color;
-    out float Color;
+
+    out VS_OUT {
+        float color;
+    } vs_out;
+
     void main() {
-        Color = color;
+        vs_out.color = color;
         gl_Position = vec4(position, 0.0, 1.0);
     }
 )glsl";
+
+const GLchar* geometrySource = R"glsl(
+    #version 330 core
+
+    layout (triangles) in;
+    layout (triangle_strip, max_vertices = 3) out;
+
+    in VS_OUT {
+        float color;
+    } gs_in[];
+
+    out float color;
+
+    void main() {
+        gl_Position = gl_in[0].gl_Position;
+        color = gs_in[0].color;
+        EmitVertex();
+
+        gl_Position = gl_in[1].gl_Position;
+        color = gs_in[1].color;
+        EmitVertex();
+
+        gl_Position = gl_in[2].gl_Position;
+        color = gs_in[2].color;
+        EmitVertex();
+
+        EndPrimitive();
+    }
+)glsl";
+
 const GLchar* fragmentSource = R"glsl(
     #version 460 core
-    in float Color;
+
+    in float color;
     in vec2 position;
-    out vec4 outColor;
+
+    out vec4 fragColor;
 
     vec4 turbo(float x) {
         const vec4 kRedVec4 = vec4(0.13572138, 4.61539260, -42.66032258, 132.13108234);
@@ -45,7 +82,7 @@ const GLchar* fragmentSource = R"glsl(
     }
 
     void main() {
-        outColor = turbo(Color);
+        fragColor = turbo(color);
     }
 )glsl";
 
@@ -65,6 +102,11 @@ int main(int argc, char* argv[]) {
     glShaderSource(vertexShader, 1, &vertexSource, NULL);
     glCompileShader(vertexShader);
 
+    // Create and compile the geometry shader
+    GLuint geometryShader = glCreateShader(GL_GEOMETRY_SHADER);
+    glShaderSource(geometryShader, 1, &geometrySource, NULL);
+    glCompileShader(geometryShader);
+
     // Create and compile the fragment shader
     GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fragmentShader, 1, &fragmentSource, NULL);
@@ -73,8 +115,9 @@ int main(int argc, char* argv[]) {
     // Link the vertex and fragment shader into a shader program
     GLuint shaderProgram = glCreateProgram();
     glAttachShader(shaderProgram, vertexShader);
+    glAttachShader(shaderProgram, geometryShader);
     glAttachShader(shaderProgram, fragmentShader);
-    glBindFragDataLocation(shaderProgram, 0, "outColor");
+    glBindFragDataLocation(shaderProgram, 0, "fragColor");
     glLinkProgram(shaderProgram);
     glUseProgram(shaderProgram);
 
@@ -182,6 +225,7 @@ int main(int argc, char* argv[]) {
 
 
         // Draw elements
+        // glDrawArrays(GL_POINTS, 0, 6*(N-1)*(N-1));
         glDrawElements(GL_TRIANGLES, 6*(N-1)*(N-1), GL_UNSIGNED_INT, 0);
 
         // end = clock();
