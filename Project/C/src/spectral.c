@@ -28,8 +28,8 @@ const GLchar* vertexSource = R"glsl(
 const GLchar* geometrySource = R"glsl(
     #version 330 core
 
-    layout (triangles) in;
-    layout (triangle_strip, max_vertices = 3) out;
+    layout (lines_adjacency) in;
+    layout (triangle_strip, max_vertices = 4) out;
 
     in VS_OUT {
         float color;
@@ -50,6 +50,10 @@ const GLchar* geometrySource = R"glsl(
         color = gs_in[2].color;
         EmitVertex();
 
+        gl_Position = gl_in[3].gl_Position;
+        color = gs_in[3].color;
+        EmitVertex();
+
         EndPrimitive();
     }
 )glsl";
@@ -58,7 +62,6 @@ const GLchar* fragmentSource = R"glsl(
     #version 460 core
 
     in float color;
-    in vec2 position;
 
     out vec4 fragColor;
 
@@ -146,19 +149,16 @@ int main(int argc, char* argv[]) {
     GLuint ebo;
     glGenBuffers(1, &ebo);
 
-    GLuint elements[6*(N-1)*(N-1)];
+    GLuint elements[4*(N-1)*(N-1)];
     for (int i = 0; i < N-1; i++) {
         for (int j = 0; j < N-1; j++) {
             int ind  = i*N+j;
             int ind_ = i*(N-1)+j;
-            // Lower triangle
-            elements[6*ind_  ] = ind;
-            elements[6*ind_+1] = ind+N;
-            elements[6*ind_+2] = ind+N+1;
-            // Upper triangle
-            elements[6*ind_+3] = ind;
-            elements[6*ind_+4] = ind+1;
-            elements[6*ind_+5] = ind+N+1;
+
+            elements[4*ind_  ] = ind;
+            elements[4*ind_+1] = ind+1;
+            elements[4*ind_+2] = ind+N;
+            elements[4*ind_+3] = ind+N+1;
         }
     }
 
@@ -225,8 +225,7 @@ int main(int argc, char* argv[]) {
 
 
         // Draw elements
-        // glDrawArrays(GL_POINTS, 0, 6*(N-1)*(N-1));
-        glDrawElements(GL_TRIANGLES, 6*(N-1)*(N-1), GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_LINES_ADJACENCY, 4*(N-1)*(N-1), GL_UNSIGNED_INT, 0);
 
         // end = clock();
         // printf("Time = %f\n", (double)(end-begin)/CLOCKS_PER_SEC);
