@@ -10,7 +10,7 @@
 
 // Shader sources
 const GLchar* vertexSource = R"glsl(
-    #version 460 core
+    #version 450 core
 
     in vec2 position;
     in float color;
@@ -26,7 +26,7 @@ const GLchar* vertexSource = R"glsl(
 )glsl";
 
 const GLchar* geometrySource = R"glsl(
-    #version 330 core
+    #version 450 core
 
     layout (lines_adjacency) in;
     layout (triangle_strip, max_vertices = 4) out;
@@ -51,7 +51,7 @@ const GLchar* geometrySource = R"glsl(
 )glsl";
 
 const GLchar* fragmentSource = R"glsl(
-    #version 460 core
+    #version 450 core
 
     in GS_OUT {
         float color;
