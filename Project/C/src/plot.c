@@ -43,5 +43,4 @@ void imshow(bov_window_t *w, double *z, int n1, int n2) {
             bov_points_delete(points);
         }
     }
-
 }
