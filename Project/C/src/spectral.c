@@ -98,49 +98,48 @@ int main(int argc, char* argv[]) {
 
 
     clock_t begin, end;
-    while(!glfwWindowShouldClose(window)) {
-        glfwSwapBuffers(window);
+    while (!glfwWindowShouldClose(window)) {
+        // Timestepping
+        begin = clock();
+        for (int i = 0; i < skip; i++) {
+            RungeKutta4(c, dt);
+            t++;
+        }
+        end = clock();
+
+        // Event input
         glfwPollEvents();
-
-        // Clear the screen to black
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-
-        // Check for drag
         if (drag) {
             double xpos, ypos;
             glfwGetCursorPos(window, &xpos, &ypos);
             // printf("(%f, %f)\n", xpos, ypos);
         }
-
-        // Timestepping
-        for (int i = 0; i < skip; i++) {
-            RungeKutta4(c, dt);
-            t++;
+        if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+            glfwSetWindowShouldClose(window, GL_TRUE);
         }
 
-        // Update plot
+        // Update graphics
         // begin = clock();
+        glfwSwapBuffers(window);
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        // Update plot
         for (int i = 0; i < N*N; i++) {
             colors[i] = (float) ((c[i] + 1.0)/2.0);
         }
-
         glBindBuffer(GL_ARRAY_BUFFER, vbo_colors);
         glBufferData(GL_ARRAY_BUFFER, sizeof(colors), colors, GL_STREAM_DRAW);
 
-
         // Draw elements
         glDrawElements(GL_LINES_ADJACENCY, 4*(N-1)*(N-1), GL_UNSIGNED_INT, 0);
-
         // end = clock();
-        // printf("Time = %f\n", (double)(end-begin)/CLOCKS_PER_SEC);
-        // printf("Iter = %5d; Time = %.6f\n", t, t*dt);
 
-
-        if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-            glfwSetWindowShouldClose(window, GL_TRUE);
+        // Print stuff
+        printf("Time = %f\n", (double)(end-begin)/CLOCKS_PER_SEC);
+        // printf("\rIter = %5d, Time = %.6f  ", t, t*dt);
+        // fflush(stdout);
     }
-
 
     glDeleteBuffers(1, &ebo);
     glDeleteBuffers(1, &vbo_pos);
