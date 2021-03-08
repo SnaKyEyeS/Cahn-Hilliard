@@ -112,8 +112,8 @@ void free_functions() {
     free(delsq);
 
     // laplacian
-    free(cval);
-    free(rval);
+    fftw_free(cval);
+    fftw_free(rval);
     fftw_destroy_plan(rfft2);
     fftw_destroy_plan(irfft2);
     fftw_cleanup();
