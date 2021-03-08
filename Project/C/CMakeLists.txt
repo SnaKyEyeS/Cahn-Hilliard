@@ -12,7 +12,7 @@ set(CMAKE_C_FLAGS "-O3")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
 # OpenMP
-option(USE_OPENMP "Compile parallel code, using OpenMP.")
+option(USE_OPENMP "Compile parallel code, using OpenMP." OFF)
 if (USE_OPENMP)
 
     message(STATUS "Compiling with OpenMP...")
