@@ -130,8 +130,6 @@ int main(int argc, char* argv[]) {
         }
         glBindBuffer(GL_ARRAY_BUFFER, vbo_colors);
         glBufferData(GL_ARRAY_BUFFER, sizeof(colors), colors, GL_STREAM_DRAW);
-
-        // Draw elements
         glDrawElements(GL_LINES_ADJACENCY, 4*(N-1)*(N-1), GL_UNSIGNED_INT, 0);
         // end = clock();
 
