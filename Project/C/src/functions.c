@@ -10,24 +10,36 @@ void RungeKutta4(double* c, double dt){
     f(c, k1);
 
     // K2
+#ifdef USE_OPENMP
+    #pragma omp parallel for
+#endif
     for(int i = 0; i < N*N; i++) {
         tmp[i] = c[i] + dt*k1[i]/2.0;
     }
     f(tmp, k2);
 
     // K3
+#ifdef USE_OPENMP
+    #pragma omp parallel for
+#endif
     for(int i = 0; i < N*N; i++) {
         tmp[i] = c[i] + dt*k2[i]/2.0;
     }
     f(tmp, k3);
 
     // K4
+#ifdef USE_OPENMP
+    #pragma omp parallel for
+#endif
     for(int i = 0; i < N*N; i++) {
         tmp[i] = c[i] + dt*k3[i];
     }
     f(tmp, k4);
 
     // C_i+1
+#ifdef USE_OPENMP
+    #pragma omp parallel for
+#endif
     for(int i = 0; i < N*N; i++) {
         c[i] += dt*(k1[i] + 2*k2[i] + 2*k3[i] + k4[i])/6.0;
     }
@@ -83,6 +95,11 @@ void laplacian(double* c, double h, double* delsq){
  *  Initialise the various stuff
  */
 void init_functions() {
+
+#ifdef USE_OPENMP
+    omp_set_num_threads(6);
+#endif
+
     k1    = (double*) malloc(N*N*sizeof(double));
     k2    = (double*) malloc(N*N*sizeof(double));
     k3    = (double*) malloc(N*N*sizeof(double));

@@ -134,7 +134,7 @@ int main(int argc, char* argv[]) {
         // end = clock();
 
         // Print stuff
-        // printf("Time = %f\n", (double)(end-begin)/CLOCKS_PER_SEC);
+        // printf("Time = %7.3f [ms]\n", (double)(end-begin)/CLOCKS_PER_SEC*1e3);
         printf("\rIter = %5d, Time = %.6f  ", t, t*dt);
         fflush(stdout);
     }

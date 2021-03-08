@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <fftw3.h>
+#include <omp.h>
 #include "const.h"
 
 #define REAL 0
