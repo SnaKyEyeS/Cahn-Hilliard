@@ -6,8 +6,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <fftw3.h>
-#include <omp.h>
 #include "const.h"
+
+#ifdef USE_OPENMP
+#include <omp.h>
+#endif
 
 #define REAL 0
 #define CPLX 1
