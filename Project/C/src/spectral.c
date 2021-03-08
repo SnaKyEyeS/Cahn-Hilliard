@@ -100,12 +100,12 @@ int main(int argc, char* argv[]) {
     clock_t begin, end;
     while (!glfwWindowShouldClose(window)) {
         // Timestepping
-        begin = clock();
+        // begin = clock();
         for (int i = 0; i < skip; i++) {
             RungeKutta4(c, dt);
             t++;
         }
-        end = clock();
+        // end = clock();
 
         // Event input
         glfwPollEvents();
@@ -136,9 +136,9 @@ int main(int argc, char* argv[]) {
         // end = clock();
 
         // Print stuff
-        printf("Time = %f\n", (double)(end-begin)/CLOCKS_PER_SEC);
-        // printf("\rIter = %5d, Time = %.6f  ", t, t*dt);
-        // fflush(stdout);
+        // printf("Time = %f\n", (double)(end-begin)/CLOCKS_PER_SEC);
+        printf("\rIter = %5d, Time = %.6f  ", t, t*dt);
+        fflush(stdout);
     }
 
     glDeleteBuffers(1, &ebo);
