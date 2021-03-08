@@ -1,6 +1,10 @@
 #include "window.h"
 
 
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
+
+
 /*
  *  GLFW, GLEW initialisation
  */
@@ -17,6 +21,7 @@ GLFWwindow *init_window() {
 
     // Callbacks
     glfwSetKeyCallback(window, key_callback);
+    glfwSetMouseButtonCallback(window, mouse_button_callback);
 
     // Init GLEW
     glewExperimental = GL_TRUE;
@@ -34,5 +39,15 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
     if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
         printf("Spacebar pressed !\n");
+    }
+}
+
+/*
+ *  Callback for mouse buttons
+ */
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
+
+    if (button == GLFW_MOUSE_BUTTON_LEFT) {
+        drag = (action == GLFW_PRESS);
     }
 }

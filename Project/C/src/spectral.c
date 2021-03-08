@@ -106,6 +106,11 @@ int main(int argc, char* argv[]) {
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
+        // Check for drag
+        if (drag) {
+            printf("Ajoute de la matière ching chong !\n");
+        }
+
         // Timestepping
         for (int i = 0; i < skip; i++) {
             RungeKutta4(c, dt);
