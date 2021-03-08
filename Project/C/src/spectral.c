@@ -108,7 +108,9 @@ int main(int argc, char* argv[]) {
 
         // Check for drag
         if (drag) {
-            printf("Ajoute de la matière ching chong !\n");
+            double xpos, ypos;
+            glfwGetCursorPos(window, &xpos, &ypos);
+            // printf("(%f, %f)\n", xpos, ypos);
         }
 
         // Timestepping
