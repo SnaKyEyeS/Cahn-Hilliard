@@ -12,8 +12,6 @@
 #include <omp.h>
 #endif
 
-#define REAL 0
-#define CPLX 1
 
 void RungeKutta4(double* c, double dt);
 void f(double* c, double* dc);

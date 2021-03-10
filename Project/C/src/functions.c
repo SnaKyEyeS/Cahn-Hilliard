@@ -1,4 +1,8 @@
 #include "functions.h"
+#include "kernel.h"
+
+#define REAL 0
+#define CPLX 1
 
 
 /*
@@ -11,28 +15,28 @@ void RungeKutta4(double* c, double dt){
 
     // K2
     #pragma omp parallel for
-    for(int i = 0; i < N*N; i++) {
+    for(int i = 0; i < N_DISCR*N_DISCR; i++) {
         tmp[i] = c[i] + dt*k1[i]/2.0;
     }
     f(tmp, k2);
 
     // K3
     #pragma omp parallel for
-    for(int i = 0; i < N*N; i++) {
+    for(int i = 0; i < N_DISCR*N_DISCR; i++) {
         tmp[i] = c[i] + dt*k2[i]/2.0;
     }
     f(tmp, k3);
 
     // K4
     #pragma omp parallel for
-    for(int i = 0; i < N*N; i++) {
+    for(int i = 0; i < N_DISCR*N_DISCR; i++) {
         tmp[i] = c[i] + dt*k3[i];
     }
     f(tmp, k4);
 
     // C_i+1
     #pragma omp parallel for
-    for(int i = 0; i < N*N; i++) {
+    for(int i = 0; i < N_DISCR*N_DISCR; i++) {
         c[i] += dt*(k1[i] + 2*k2[i] + 2*k3[i] + k4[i])/6.0;
     }
 }
@@ -43,11 +47,11 @@ void RungeKutta4(double* c, double dt){
  */
 void f(double* c, double* dc) {
 
-    laplacian(c, 1.0/N, delsq);
-    for(int i = 0; i < N*N; i++) {
+    laplacian(c, 1.0/N_DISCR, delsq);
+    for(int i = 0; i < N_DISCR*N_DISCR; i++) {
         delsq[i] = c[i]*c[i]*c[i] - c[i] - A*A*delsq[i];
     }
-    laplacian(delsq, 1.0/N, dc);
+    laplacian(delsq, 1.0/N_DISCR, dc);
 }
 
 /*
@@ -57,22 +61,22 @@ void f(double* c, double* dc) {
 void laplacian(double* c, double h, double* delsq){
 
     // Forward 2D real-valued FFT
-    memcpy(rval, c, N*N*sizeof(double));
+    memcpy(rval, c, N_DISCR*N_DISCR*sizeof(double));
     fftw_execute(rfft2);
 
     // Take the derivative
     int l, ind;
     double k;
     double factor = 4*M_PI*M_PI*h*h;
-    for (int i = 0; i < N; i++) {
-        for (int j = 0; j < N/2+1; j++) {
+    for (int i = 0; i < N_DISCR; i++) {
+        for (int j = 0; j < N_DISCR/2+1; j++) {
 
             // Wavenumber
-            l = (i < N/2) ? i : i-N;
+            l = (i < N_DISCR/2) ? i : i-N_DISCR;
             k = -factor * (j*j + l*l);
 
             // Multiply by (ik)²
-            ind = i*(N/2+1)+j;
+            ind = i*(N_DISCR/2+1)+j;
             cval[ind][REAL] = k*cval[ind][REAL];
             cval[ind][CPLX] = k*cval[ind][CPLX];
         }
@@ -80,7 +84,7 @@ void laplacian(double* c, double h, double* delsq){
 
     // Backward 2D real-valued FFT
     fftw_execute(irfft2);
-    memcpy(delsq, rval, N*N*sizeof(double));
+    memcpy(delsq, rval, N_DISCR*N_DISCR*sizeof(double));
 }
 
 /*
@@ -92,18 +96,18 @@ void init_functions() {
     omp_set_num_threads(6);
 #endif
 
-    k1    = (double*) malloc(N*N*sizeof(double));
-    k2    = (double*) malloc(N*N*sizeof(double));
-    k3    = (double*) malloc(N*N*sizeof(double));
-    k4    = (double*) malloc(N*N*sizeof(double));
-    tmp   = (double*) malloc(N*N*sizeof(double));
-    delsq = (double*) malloc(N*N*sizeof(double));
+    k1    = (double*) malloc(N_DISCR*N_DISCR*sizeof(double));
+    k2    = (double*) malloc(N_DISCR*N_DISCR*sizeof(double));
+    k3    = (double*) malloc(N_DISCR*N_DISCR*sizeof(double));
+    k4    = (double*) malloc(N_DISCR*N_DISCR*sizeof(double));
+    tmp   = (double*) malloc(N_DISCR*N_DISCR*sizeof(double));
+    delsq = (double*) malloc(N_DISCR*N_DISCR*sizeof(double));
 
-    cval = fftw_alloc_complex(N*(N/2+1));
-    rval = fftw_alloc_real(N*N);
+    cval = fftw_alloc_complex(N_DISCR*(N_DISCR/2+1));
+    rval = fftw_alloc_real(N_DISCR*N_DISCR);
 
-    rfft2  = fftw_plan_dft_r2c_2d(N, N, rval, cval, FFTW_PATIENT);
-    irfft2 = fftw_plan_dft_c2r_2d(N, N, cval, rval, FFTW_PATIENT);
+    rfft2  = fftw_plan_dft_r2c_2d(N_DISCR, N_DISCR, rval, cval, FFTW_PATIENT);
+    irfft2 = fftw_plan_dft_c2r_2d(N_DISCR, N_DISCR, cval, rval, FFTW_PATIENT);
 }
 
 /*

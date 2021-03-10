@@ -1,8 +1,8 @@
 # Minimum version
-cmake_minimum_required(VERSION 3.12.2)
+cmake_minimum_required(VERSION 3.18)
 
 # Project name
-project(LMECA2300 C)
+project(LMECA2300 LANGUAGES C CUDA)
 
 # Exec name
 set(EXEC_NAME project)
@@ -23,6 +23,11 @@ if (USE_OPENMP)
     add_definitions(-DUSE_OPENMP)
 
 endif (USE_OPENMP)
+
+# CUDA
+find_package(CUDA REQUIRED)
+include_directories(${CUDA_INCLUDE_DIRS})
+set(EXT_LIBS ${EXT_LIBS} ${CUDA_LIBRARIES})
 
 # FFT libraries - MKL or FFTW3 (if MKL not found)
 find_package(MKL)
@@ -57,8 +62,12 @@ set(EXT_LIBS ${EXT_LIBS} ${OPENGL_LIBRARY})
 
 # Project files
 include_directories(${PROJECT_SOURCE_DIR}/src ${PROJECT_SOURCE_DIR}/inc)
-file(GLOB C_SRCS "${PROJECT_SOURCE_DIR}/src/*.c")
+file(GLOB C_SRCS    "${PROJECT_SOURCE_DIR}/src/*.c")
+file(GLOB CUDA_SRCS "${PROJECT_SOURCE_DIR}/src/*.cu")
 
 # Compile/link src files & libs
-add_executable(${EXEC_NAME} ${C_SRCS})
+add_executable(${EXEC_NAME} ${C_SRCS} ${CUDA_SRCS})
 target_link_libraries(${EXEC_NAME} ${EXT_LIBS} m dl pthread)
+
+# Target properties
+set_property(TARGET ${EXEC_NAME} PROPERTY CUDA_ARCHITECTURES OFF)
