@@ -25,9 +25,8 @@ if (USE_OPENMP)
 endif (USE_OPENMP)
 
 # CUDA
-find_package(CUDA REQUIRED)
-include_directories(${CUDA_INCLUDE_DIRS})
-set(EXT_LIBS ${EXT_LIBS} ${CUDA_LIBRARIES})
+find_package(CUDAToolkit REQUIRED)
+set(EXT_LIBS ${EXT_LIBS} CUDA::cufft)
 
 # FFT libraries - MKL or FFTW3 (if MKL not found)
 find_package(MKL)
