@@ -7,6 +7,7 @@
 #include "functions.h"
 #include "window.h"
 #include "shaders.h"
+#include "kernel.h"
 
 
 int main(int argc, char* argv[]) {
@@ -71,6 +72,7 @@ int main(int argc, char* argv[]) {
 
     // Initialise Cahn-Hilliard solver
     init_functions();
+    init_cuda();
     double *c = (double*) malloc(n*n*sizeof(double));
     for (int i = 0; i < n*n; i++) {
         c[i] = 2.0*((double)rand() / (double)RAND_MAX ) - 1.0;
@@ -150,6 +152,7 @@ int main(int argc, char* argv[]) {
     free_functions();
     free_shaders();
     free(c);
+    free_cuda();
 
     return EXIT_SUCCESS;
 }

@@ -47,11 +47,11 @@ void RungeKutta4(double* c, double dt){
  */
 void f(double* c, double* dc) {
 
-    laplacian(c, 1.0/N_DISCR, delsq);
+    cufft_laplacian(c, 1.0/N_DISCR, delsq);
     for(int i = 0; i < N_DISCR*N_DISCR; i++) {
         delsq[i] = c[i]*c[i]*c[i] - c[i] - A*A*delsq[i];
     }
-    laplacian(delsq, 1.0/N_DISCR, dc);
+    cufft_laplacian(delsq, 1.0/N_DISCR, dc);
 }
 
 /*

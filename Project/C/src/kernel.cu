@@ -8,7 +8,7 @@ void cufft_laplacian(float* c, float h, float* delsq){
     size_t mem_size = N_DISCR*N_DISCR*sizeof(float);
 
     cudaMemcpy(rval_gpu, c, mem_size, cudaMemcpyHostToDevice);
-    cufftExecR2C(plan, rval_gpu, cval_gpu, CUFFT_FORWARD);
+    cufftExecR2C(rfft, rval_gpu, cval_gpu);
 
     grid.x=8;
     grid.y=13;
@@ -19,13 +19,13 @@ void cufft_laplacian(float* c, float h, float* delsq){
 
     deriv<<<grid, threads>>>(h, cval_gpu);
 
-    cufftExecC2R(plan, cval_gpu, rval_gpu, CUFFT_INVERSE);
+    cufftExecC2R(irfft, cval_gpu, rval_gpu);
     cudaMemcpy(delsq, rval_gpu, mem_size, cudaMemcpyDeviceToHost);
 }
 
 void init_cuda(){
     size_t mem_size = N_DISCR*N_DISCR*sizeof(float);
-    size_t complex_size = N_DISCR*N_DISCR*sizeof(Complex);
+    size_t complex_size = N_DISCR*N_DISCR*sizeof(cufftComplex);
 
     cudaMalloc((void **) &delsq_gpu, mem_size);
     cudaMalloc((void **) &rval_gpu, mem_size);
@@ -48,8 +48,8 @@ __global__ void deriv(float h, cufftComplex* cval){
 
     // Multiply by (ik)²
     ind = i*(N_DISCR/2+1)+j;
-    cval[ind][REAL] = k*cval[ind][REAL];
-    cval[ind][CPLX] = k*cval[ind][CPLX];
+    cval[ind].x = k*cval[ind].x;
+    cval[ind].y = k*cval[ind].y;
 }
 
 void free_cuda(){

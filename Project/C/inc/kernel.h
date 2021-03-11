@@ -16,7 +16,7 @@ cufftHandle irfft;
 dim3 grid, threads;
 
 
-__global__ void deriv(float h, float* cval);
+__global__ void deriv(float h, cufftComplex* cval);
 
 
 void cufft_laplacian(double* c, double h, double* delsq);
