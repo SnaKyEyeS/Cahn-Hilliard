@@ -33,8 +33,8 @@ void init_cuda() {
     cudaMalloc((void **) &rval_gpu, mem_size);
     cudaMalloc((void **) &cval_gpu, complex_size);
 
-    cufftPlan2d(&rfft, N_DISCR, N_DISCR, CUFFT_R2C);
-    cufftPlan2d(&irfft, N_DISCR, N_DISCR, CUFFT_C2R);
+    cufftPlan2d(&rfft, N_DISCR, N_DISCR, CUFFT_D2Z);
+    cufftPlan2d(&irfft, N_DISCR, N_DISCR, CUFFT_Z2D);
 }
 
 __global__ void deriv(double h, cufftDoubleComplex* cval) {
