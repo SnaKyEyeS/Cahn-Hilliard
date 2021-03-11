@@ -1,10 +1,12 @@
-#include "kernel.h"
+extern "C" {
+    #include "kernel.h"
+}
 
 #define REAL 0
 #define CPLX 1
 
 
-void cufft_laplacian(float* c, float h, float* delsq){
+void cufft_laplacian(float* c, float h, float* delsq) {
     size_t mem_size = N_DISCR*N_DISCR*sizeof(float);
 
     cudaMemcpy(rval_gpu, c, mem_size, cudaMemcpyHostToDevice);
@@ -23,7 +25,7 @@ void cufft_laplacian(float* c, float h, float* delsq){
     cudaMemcpy(delsq, rval_gpu, mem_size, cudaMemcpyDeviceToHost);
 }
 
-void init_cuda(){
+void init_cuda() {
     size_t mem_size = N_DISCR*N_DISCR*sizeof(float);
     size_t complex_size = N_DISCR*N_DISCR*sizeof(cufftComplex);
 
@@ -35,7 +37,7 @@ void init_cuda(){
     cufftPlan2d(&irfft, N_DISCR, N_DISCR, CUFFT_C2R);
 }
 
-__global__ void deriv(float h, cufftComplex* cval){
+__global__ void deriv(float h, cufftComplex* cval) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     int j = blockIdx.y * blockDim.y + threadIdx.y;
 
@@ -52,7 +54,7 @@ __global__ void deriv(float h, cufftComplex* cval){
     cval[ind].y = k*cval[ind].y;
 }
 
-void free_cuda(){
+void free_cuda() {
     cudaFree(delsq_gpu);
     cudaFree(rval_gpu);
     cudaFree(cval_gpu);

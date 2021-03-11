@@ -19,7 +19,7 @@ dim3 grid, threads;
 __global__ void deriv(float h, cufftComplex* cval);
 
 
-void cufft_laplacian(double* c, double h, double* delsq);
+void cufft_laplacian(float* c, float h, float* delsq);
 
 
 void init_cuda(void);

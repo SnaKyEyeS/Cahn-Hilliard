@@ -25,6 +25,7 @@ if (USE_OPENMP)
 endif (USE_OPENMP)
 
 # CUDA
+find_package(CUDA REQUIRED)
 find_package(CUDAToolkit REQUIRED)
 set(EXT_LIBS ${EXT_LIBS} CUDA::cufft)
 
@@ -65,7 +66,8 @@ file(GLOB C_SRCS    "${PROJECT_SOURCE_DIR}/src/*.c")
 file(GLOB CUDA_SRCS "${PROJECT_SOURCE_DIR}/src/*.cu")
 
 # Compile/link src files & libs
-add_executable(${EXEC_NAME} ${C_SRCS} ${CUDA_SRCS})
+cuda_compile(CU_O ${CUDA_SRCS})
+add_executable(${EXEC_NAME} ${C_SRCS} ${CU_O})
 target_link_libraries(${EXEC_NAME} ${EXT_LIBS} m dl pthread)
 
 # Target properties
