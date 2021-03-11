@@ -6,9 +6,9 @@
 #include "const.h"
 
 
-float* delsq_gpu;
-float* rval_gpu;
-cufftComplex *cval_gpu;
+double* delsq_gpu;
+double* rval_gpu;
+cufftDoubleComplex *cval_gpu;
 
 cufftHandle rfft;
 cufftHandle irfft;
@@ -16,10 +16,10 @@ cufftHandle irfft;
 dim3 grid, threads;
 
 
-__global__ void deriv(float h, cufftComplex* cval);
+__global__ void deriv(double h, cufftDoubleComplex* cval);
 
 
-void cufft_laplacian(float* c, float h, float* delsq);
+void cufft_laplacian(double* c, double h, double* delsq);
 
 
 void init_cuda(void);
