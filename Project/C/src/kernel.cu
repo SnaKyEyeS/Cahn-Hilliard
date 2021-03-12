@@ -23,7 +23,7 @@ void cufft_laplacian(double* c, double h, double* delsq) {
     cufftExecZ2D(irfft, cval, delsq);
 }
 
-void init_cuda(double* c_gpu) {
+void init_cuda() {
     size_t mem_size = N_DISCR*N_DISCR*sizeof(double);
     size_t complex_size = N_DISCR*N_DISCR*sizeof(cufftDoubleComplex);
 
@@ -77,7 +77,7 @@ __global__ void inside_deriv(double* c, double* delsq) {
     delsq[i] = c[i]*c[i]*c[i] - c[i] - A*A*delsq[i];
 }
 
-int Nblocks = (N_DISCR*N_DISCR + 255)/256;
+int Nblocks = (N_DISCR*N_DISCR)/256;
 int Nthreads = 256;
 
 
@@ -86,23 +86,30 @@ int Nthreads = 256;
  *  Return value is done in-place.
  */
 void RungeKutta4(double* c, double dt){
+
+    size_t mem_size = N_DISCR*N_DISCR*sizeof(double);
+    cudaMemcpy( c_gpu, c, mem_size, cudaMemcpyHostToDevice );
+
+
     // K1
-    f(c, k1);
+    f(c_gpu, k1);
 
     // K2
-    k12_sum<<<Nblocks, Nthreads>>>(c, k1, tmp, dt);
+    k12_sum<<<Nblocks, Nthreads>>>(c_gpu, k1, tmp, dt);
     f(tmp, k2);
 
     // K3
-    k12_sum<<<Nblocks, Nthreads>>>(c, k2, tmp, dt);
+    k12_sum<<<Nblocks, Nthreads>>>(c_gpu, k2, tmp, dt);
     f(tmp, k3);
 
     // K4
-    k3_sum<<<Nblocks, Nthreads>>>(c, k3, tmp, dt);
+    k3_sum<<<Nblocks, Nthreads>>>(c_gpu, k3, tmp, dt);
     f(tmp, k4);
 
     // C_i+1
-    k_sum_tot<<<Nblocks, Nthreads>>>(c, k1, k2, k3, k4, dt);
+    k_sum_tot<<<Nblocks, Nthreads>>>(c_gpu, k1, k2, k3, k4, dt);
+
+    cudaMemcpy( c, c_gpu, mem_size, cudaMemcpyDeviceToHost );
 }
 
 /*
@@ -116,22 +123,22 @@ void f(double* c, double* dc) {
     cufft_laplacian(delsq, 1.0/N_DISCR, dc);
 }
 
-void copy_cuda_H2D(double* c_gpu, double* c){
-  size_t mem_size = N_DISCR*N_DISCR*sizeof(double);
-  cudaMemcpy( c_gpu, c, mem_size, cudaMemcpyHostToDevice );
-}
-
-void copy_cuda_D2H(double* c, double* c_gpu){
-  size_t mem_size = N_DISCR*N_DISCR*sizeof(double);
-  cudaMemcpy( c, c_gpu, mem_size, cudaMemcpyDeviceToHost );
-}
-
-
+// void copy_cuda_H2D(double* c_gpu, double* c){
+//   size_t mem_size = N_DISCR*N_DISCR*sizeof(double);
+//   cudaMemcpy( c_gpu, c, mem_size, cudaMemcpyHostToDevice );
+// }
+//
+// void copy_cuda_D2H(double* c, double* c_gpu){
+//   size_t mem_size = N_DISCR*N_DISCR*sizeof(double);
+//   cudaMemcpy( c, c_gpu, mem_size, cudaMemcpyDeviceToHost );
+// }
 
 
 
 
-void free_cuda(double* c_gpu) {
+
+
+void free_cuda() {
     cudaFree(delsq);
     cudaFree(tmp);
     cudaFree(k1);

@@ -73,14 +73,13 @@ int main(int argc, char* argv[]) {
 
     // Initialise Cahn-Hilliard solver
     // init_functions(); //faut plus allouer les k ils sont dans init_cuda
-    double *c_gpu;
-    init_cuda(c_gpu);
+    init_cuda();
 
     double *c = (double*) malloc(n*n*sizeof(double));
     for (int i = 0; i < n*n; i++) {
         c[i] = 2.0*((double)rand() / (double)RAND_MAX ) - 1.0;
     }
-    copy_cuda_H2D(c_gpu, c);
+    // copy_cuda_H2D(c_gpu, c);
 
     // Create a Vertex Buffer Object for colors
     GLuint vbo_colors;
@@ -110,10 +109,10 @@ int main(int argc, char* argv[]) {
 
 
         for (int i = 0; i < skip; i++) {
-            RungeKutta4(c_gpu, dt);
+            RungeKutta4(c, dt);
             t++;
         }
-        copy_cuda_D2H(c, c_gpu);
+        // copy_cuda_D2H(c, c_gpu);
         end = clock();
 
         // Event input
@@ -159,7 +158,7 @@ int main(int argc, char* argv[]) {
     // free_functions();
     free_shaders();
     free(c);
-    free_cuda(c_gpu);
+    free_cuda();
 
     return EXIT_SUCCESS;
 }
