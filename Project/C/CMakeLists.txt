@@ -24,7 +24,7 @@ if (USE_CUDA)
     set(EXT_LIBS ${EXT_LIBS} CUDA::cufft)
     add_definitions(-DUSE_CUDA)
 
-    # Project files
+    # GPU-specific files
     include_directories(${PROJECT_SOURCE_DIR}/inc/gpu)
     file(GLOB CUDA_SRCS "${PROJECT_SOURCE_DIR}/src/gpu/*.cu")
 
@@ -32,7 +32,7 @@ if (USE_CUDA)
     cuda_compile(CUDA_O ${CUDA_SRCS})
 
 else (USE_CUDA)
-    # Project files
+    # CPU-specific files
     include_directories(${PROJECT_SOURCE_DIR}/inc/cpu)
     file(GLOB C_SRCS ${C_SRCS} "${PROJECT_SOURCE_DIR}/src/cpu/*.c")
 
