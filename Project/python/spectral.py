@@ -23,7 +23,7 @@ def laplacian(c):
     """
     Compute the Laplacian of c
     """
-    return irfft2(k_deriv*rfft2(c)).real
+    return irfft2(k_deriv*rfft2(c))
 
 
 def f(c):
