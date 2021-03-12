@@ -41,8 +41,8 @@ double* delsq;
 double* c_gpu;
 
 
-void init_cuda(double *c);
-void free_cuda();
+void init_solver(double *c);
+void free_solver();
 
 void cudaGetSolution(double *c);
 

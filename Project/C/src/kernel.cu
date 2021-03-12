@@ -15,7 +15,7 @@ void cufft_laplacian(double* c, double h, double* delsq) {
     cufftExecZ2D(irfft, cval, delsq);
 }
 
-void init_cuda(double *c) {
+void init_solver(double *c) {
     size_t complex_size = N_DISCR*N_DISCR*sizeof(cufftDoubleComplex);
 
     grid.x = 8;
@@ -119,7 +119,7 @@ void cudaGetSolution(double *c) {
     cudaMemcpy(c, c_gpu, mem_size, cudaMemcpyDeviceToHost);
 }
 
-void free_cuda() {
+void free_solver() {
     cudaFree(delsq);
     cudaFree(tmp);
     cudaFree(k1);

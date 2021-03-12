@@ -76,8 +76,7 @@ int main(int argc, char* argv[]) {
     for (int i = 0; i < n*n; i++) {
         c[i] = 2.0*((double)rand() / (double)RAND_MAX ) - 1.0;
     }
-    init_cuda(c);
-    // init_functions(); //faut plus allouer les k ils sont dans init_cuda
+    init_solver(c);
 
     // Create a Vertex Buffer Object for colors
     GLuint vbo_colors;
@@ -151,10 +150,9 @@ int main(int argc, char* argv[]) {
 
     glfwDestroyWindow(window);
     glfwTerminate();
-    // free_functions();
     free_shaders();
+    free_solver();
     free(c);
-    free_cuda();
 
     return EXIT_SUCCESS;
 }
