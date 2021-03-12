@@ -66,7 +66,7 @@ int main(int argc, char* argv[]) {
     // Simulation parameters
     int n = N_DISCR;
     int t = 0;
-    double dt = 1e-6/4;
+    double dt = 70.0 / (N*N*N*N);
     double skip = 10;
 
     // Initialise Cahn-Hilliard solver
