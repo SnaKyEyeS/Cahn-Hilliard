@@ -1,9 +1,8 @@
-#ifndef FUNCTIONS_H_INCLUDED
-#define FUNCTIONS_H_INCLUDED
+#ifndef _SOLVER_H_
+#define _SOVLER_H_
 
 #include <math.h>
 #include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
 #include <fftw3.h>
 #include "const.h"

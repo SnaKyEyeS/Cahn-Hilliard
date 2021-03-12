@@ -40,6 +40,10 @@ void RungeKutta4(double* c, double dt){
     }
 }
 
+/*
+ *  Compute the time derivative of c
+ *  Return value is not in-place.
+ */
 void f(double* c, double* dc) {
 
     laplacian(c, 1.0/N_DISCR, delsq);
