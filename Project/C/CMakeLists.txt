@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 3.17)
 
 # Project name
-project(LMECA2300 LANGUAGES C CUDA)
+project(LMECA2300 LANGUAGES C)
 
 # Exec name
 set(EXEC_NAME project)
@@ -18,6 +18,9 @@ file(GLOB C_SRCS "${PROJECT_SOURCE_DIR}/src/*.c")
 # CPU or GPU (CUDA)
 option(USE_CUDA "Compile GPU code, using CUDA." OFF)
 if (USE_CUDA)
+    # Enable CUDA
+    enable_language(CUDA)
+
     # cuFFT & co
     find_package(CUDA REQUIRED)
     find_package(CUDAToolkit REQUIRED)
