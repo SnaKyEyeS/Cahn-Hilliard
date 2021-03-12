@@ -105,7 +105,9 @@ int main(int argc, char* argv[]) {
             RungeKutta4(c, dt);
             t++;
         }
-        // cudaGetSolution(c);
+        #ifdef USE_CUDA
+        cudaGetSolution(c);
+        #endif
         end = clock();
 
         // Event input
