@@ -64,14 +64,13 @@ int main(int argc, char* argv[]) {
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements), elements, GL_STATIC_DRAW);
 
     // Simulation parameters
-    int n = N_DISCR;
     int t = 0;
-    double dt = 70.0 / pow(N_DISCR, 4);
+    double dt = 64.0 / pow(N_DISCR, 4);
     double skip = 10;
 
     // Initialise Cahn-Hilliard solver
-    double *c = (double*) malloc(n*n*sizeof(double));
-    for (int i = 0; i < n*n; i++) {
+    double *c = (double*) malloc(N_DISCR*N_DISCR*sizeof(double));
+    for (int i = 0; i < N_DISCR*N_DISCR; i++) {
         c[i] = 2.0*((double)rand() / (double)RAND_MAX ) - 1.0;
     }
     init_solver(c);
