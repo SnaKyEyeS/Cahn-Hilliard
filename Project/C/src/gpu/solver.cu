@@ -1,6 +1,5 @@
 extern "C" {
-    #include "kernel.h"
-    #include "functions.h"
+    #include "solver.h"
 }
 
 #define REAL 0

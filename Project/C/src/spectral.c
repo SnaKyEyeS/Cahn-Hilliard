@@ -4,11 +4,9 @@
 
 #include <stdio.h>
 #include <time.h>
-#include "functions.h"
 #include "window.h"
 #include "shaders.h"
-#include "kernel.h"
-#include <cuda.h>
+#include "solver.h"
 
 
 int main(int argc, char* argv[]) {
@@ -107,7 +105,7 @@ int main(int argc, char* argv[]) {
             RungeKutta4(c, dt);
             t++;
         }
-        cudaGetSolution(c);
+        // cudaGetSolution(c);
         end = clock();
 
         // Event input

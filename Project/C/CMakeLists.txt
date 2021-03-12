@@ -11,10 +11,40 @@ set(CMAKE_C_FLAGS "-O3")
 # CMake module
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
-# Project files
-include_directories(${PROJECT_SOURCE_DIR}/inc)
-file(GLOB C_SRCS    "${PROJECT_SOURCE_DIR}/src/*.c")
-file(GLOB CUDA_SRCS "${PROJECT_SOURCE_DIR}/src/*.cu")
+# CPU or GPU (CUDA)
+option(USE_CUDA "Compile GPU code, using CUDA." OFF)
+if (USE_CUDA)
+    # cuFFT & co
+    find_package(CUDA REQUIRED)
+    find_package(CUDAToolkit REQUIRED)
+    set(EXT_LIBS ${EXT_LIBS} CUDA::cufft)
+    add_definitions(-DUSE_CUDA)
+
+    # Project files
+    include_directories(${PROJECT_SOURCE_DIR}/inc ${PROJECT_SOURCE_DIR}/inc/gpu)
+    file(GLOB C_SRCS    "${PROJECT_SOURCE_DIR}/src/*.c")
+    file(GLOB CUDA_SRCS "${PROJECT_SOURCE_DIR}/src/gpu/*.cu")
+
+    # Compile *.cu source files
+    cuda_compile(CUDA_O ${CUDA_SRCS})
+
+else (USE_CUDA)
+    # Project files
+    include_directories(${PROJECT_SOURCE_DIR}/inc ${PROJECT_SOURCE_DIR}/inc/cpu)
+    file(GLOB C_SRCS    "${PROJECT_SOURCE_DIR}/src/*.c" "${PROJECT_SOURCE_DIR}/src/cpu/*.c")
+
+    # FFT libraries - MKL or FFTW3 (if MKL not found)
+    find_package(MKL)
+    if (MKL_FOUND)          # Intel's MKL
+        include_directories(${MKL_INCLUDE_DIR})
+        set(EXT_LIBS ${EXT_LIBS} ${MKL_LIBRARIES})
+    else (MKL_FOUND)        # FFTW3
+        message(STATUS "Intel's MKL not found -- proceeding with FFTW3.")
+        find_package(FFTW REQUIRED)
+        include_directories(${FFTW_INCLUDE_DIRS})
+        set(EXT_LIBS ${EXT_LIBS} ${FFTW_LIBRARIES})
+    endif (MKL_FOUND)
+endif (USE_CUDA)
 
 # OpenMP
 option(USE_OPENMP "Compile parallel code, using OpenMP." OFF)
@@ -26,31 +56,6 @@ if (USE_OPENMP)
     set(EXT_LIBS ${EXT_LIBS} ${OPENMP_C_LIBRARIES})
     add_definitions(-DUSE_OPENMP)
 endif (USE_OPENMP)
-
-# CUDA
-option(USE_CUDA "Compile GPU code, using CUDA." OFF)
-if (USE_CUDA)
-    # cuFFT & co
-    find_package(CUDA REQUIRED)
-    find_package(CUDAToolkit REQUIRED)
-    set(EXT_LIBS ${EXT_LIBS} CUDA::cufft)
-    add_definitions(-DUSE_CUDA)
-
-    # Compile *.cu source files
-    cuda_compile(CUDA_O ${CUDA_SRCS})
-endif (USE_CUDA)
-
-# FFT libraries - MKL or FFTW3 (if MKL not found)
-find_package(MKL)
-if (MKL_FOUND)          # Intel's MKL
-    include_directories(${MKL_INCLUDE_DIR})
-    set(EXT_LIBS ${EXT_LIBS} ${MKL_LIBRARIES})
-else (MKL_FOUND)        # FFTW3
-    message(STATUS "Intel's MKL not found -- proceeding with FFTW3.")
-    find_package(FFTW REQUIRED)
-    include_directories(${FFTW_INCLUDE_DIRS})
-    set(EXT_LIBS ${EXT_LIBS} ${FFTW_LIBRARIES})
-endif (MKL_FOUND)
 
 # GLEW
 find_package(GLEW REQUIRED)
