@@ -80,6 +80,7 @@ int main(int argc, char* argv[]) {
     for (int i = 0; i < n*n; i++) {
         c[i] = 2.0*((double)rand() / (double)RAND_MAX ) - 1.0;
     }
+    copy_cuda_H2D(c_gpu, c);
 
     // Create a Vertex Buffer Object for colors
     GLuint vbo_colors;
@@ -107,7 +108,7 @@ int main(int argc, char* argv[]) {
         // Timestepping
         begin = clock();
 
-        copy_cuda_H2D(c_gpu, c);
+
         for (int i = 0; i < skip; i++) {
             RungeKutta4(c_gpu, dt);
             t++;
