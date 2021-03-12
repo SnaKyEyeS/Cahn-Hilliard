@@ -6,26 +6,24 @@ extern "C" {
 #define REAL 0
 #define CPLX 1
 
+size_t mem_size = N_DISCR*N_DISCR*sizeof(double);
+
 
 void cufft_laplacian(double* c, double h, double* delsq) {
-
     cufftExecD2Z(rfft, c, cval);
-
-    grid.x=8;
-    grid.y=13;
-    grid.z=1;
-    threads.x=16;
-    threads.y=5;
-    threads.z=1;
-
     deriv<<<grid, threads>>>(h, cval);
-
     cufftExecZ2D(irfft, cval, delsq);
 }
 
-void init_cuda() {
-    size_t mem_size = N_DISCR*N_DISCR*sizeof(double);
+void init_cuda(double *c) {
     size_t complex_size = N_DISCR*N_DISCR*sizeof(cufftDoubleComplex);
+
+    grid.x = 8;
+    grid.y = 13;
+    grid.z = 1;
+    threads.x = 16;
+    threads.y = 5;
+    threads.z = 1;
 
     cudaMalloc((void **) &cval, complex_size);
     cudaMalloc((void **) &c_gpu, mem_size);
@@ -40,6 +38,9 @@ void init_cuda() {
 
     cufftPlan2d(&rfft, N_DISCR, N_DISCR, CUFFT_D2Z);
     cufftPlan2d(&irfft, N_DISCR, N_DISCR, CUFFT_Z2D);
+
+    // Initialise C
+    cudaMemcpy(c_gpu, c, mem_size, cudaMemcpyHostToDevice);
 }
 
 __global__ void deriv(double h, cufftDoubleComplex* cval) {
@@ -49,6 +50,7 @@ __global__ void deriv(double h, cufftDoubleComplex* cval) {
     int l, ind;
     double k;
     double factor = 4.0*M_PI*M_PI*h*h;
+
     // Wavenumber
     l = (i < N_DISCR/2) ? i : i-N_DISCR;
     k = -factor * (j*j + l*l);
@@ -58,12 +60,10 @@ __global__ void deriv(double h, cufftDoubleComplex* cval) {
     cval[ind].x = k*cval[ind].x;
     cval[ind].y = k*cval[ind].y;
 }
-
 __global__ void k12_sum(double* c, double* k, double* tmp, double dt) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     tmp[i] = c[i] + dt*k[i]/2.0;
 }
-
 __global__ void k3_sum(double* c, double* k, double* tmp, double dt) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     tmp[i] = c[i] + dt*k[i];
@@ -86,11 +86,6 @@ int Nthreads = 256;
  *  Return value is done in-place.
  */
 void RungeKutta4(double* c, double dt){
-
-    size_t mem_size = N_DISCR*N_DISCR*sizeof(double);
-    cudaMemcpy( c_gpu, c, mem_size, cudaMemcpyHostToDevice );
-
-
     // K1
     f(c_gpu, k1);
 
@@ -108,8 +103,6 @@ void RungeKutta4(double* c, double dt){
 
     // C_i+1
     k_sum_tot<<<Nblocks, Nthreads>>>(c_gpu, k1, k2, k3, k4, dt);
-
-    cudaMemcpy( c, c_gpu, mem_size, cudaMemcpyDeviceToHost );
 }
 
 /*
@@ -117,26 +110,14 @@ void RungeKutta4(double* c, double dt){
  *  Return value is not in-place.
  */
 void f(double* c, double* dc) {
-
     cufft_laplacian(c, 1.0/N_DISCR, delsq);
     inside_deriv<<<Nblocks, Nthreads>>>(c, delsq);
     cufft_laplacian(delsq, 1.0/N_DISCR, dc);
 }
 
-// void copy_cuda_H2D(double* c_gpu, double* c){
-//   size_t mem_size = N_DISCR*N_DISCR*sizeof(double);
-//   cudaMemcpy( c_gpu, c, mem_size, cudaMemcpyHostToDevice );
-// }
-//
-// void copy_cuda_D2H(double* c, double* c_gpu){
-//   size_t mem_size = N_DISCR*N_DISCR*sizeof(double);
-//   cudaMemcpy( c, c_gpu, mem_size, cudaMemcpyDeviceToHost );
-// }
-
-
-
-
-
+void cudaGetSolution(double *c) {
+    cudaMemcpy(c, c_gpu, mem_size, cudaMemcpyDeviceToHost);
+}
 
 void free_cuda() {
     cudaFree(delsq);

@@ -41,11 +41,9 @@ double* delsq;
 double* c_gpu;
 
 
-void init_cuda();
+void init_cuda(double *c);
 void free_cuda();
 
-void copy_cuda_H2D(double* c_gpu, double* c);
-void copy_cuda_D2H(double* c, double* c_gpu);
-
+void cudaGetSolution(double *c);
 
 #endif
