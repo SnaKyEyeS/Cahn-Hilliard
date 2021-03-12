@@ -11,6 +11,10 @@ set(CMAKE_C_FLAGS "-O3")
 # CMake module
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
+# Project files
+include_directories(${PROJECT_SOURCE_DIR}/inc)
+file(GLOB C_SRCS "${PROJECT_SOURCE_DIR}/src/*.c")
+
 # CPU or GPU (CUDA)
 option(USE_CUDA "Compile GPU code, using CUDA." OFF)
 if (USE_CUDA)
@@ -21,8 +25,7 @@ if (USE_CUDA)
     add_definitions(-DUSE_CUDA)
 
     # Project files
-    include_directories(${PROJECT_SOURCE_DIR}/inc ${PROJECT_SOURCE_DIR}/inc/gpu)
-    file(GLOB C_SRCS    "${PROJECT_SOURCE_DIR}/src/*.c")
+    include_directories(${PROJECT_SOURCE_DIR}/inc/gpu)
     file(GLOB CUDA_SRCS "${PROJECT_SOURCE_DIR}/src/gpu/*.cu")
 
     # Compile *.cu source files
@@ -30,8 +33,8 @@ if (USE_CUDA)
 
 else (USE_CUDA)
     # Project files
-    include_directories(${PROJECT_SOURCE_DIR}/inc ${PROJECT_SOURCE_DIR}/inc/cpu)
-    file(GLOB C_SRCS    "${PROJECT_SOURCE_DIR}/src/*.c" "${PROJECT_SOURCE_DIR}/src/cpu/*.c")
+    include_directories(${PROJECT_SOURCE_DIR}/inc/cpu)
+    file(GLOB C_SRCS ${C_SRCS} "${PROJECT_SOURCE_DIR}/src/cpu/*.c")
 
     # FFT libraries - MKL or FFTW3 (if MKL not found)
     find_package(MKL)
