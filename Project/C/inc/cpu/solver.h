@@ -1,9 +1,8 @@
-#ifndef FUNCTIONS_H_INCLUDED
-#define FUNCTIONS_H_INCLUDED
+#ifndef _SOLVER_H_
+#define _SOVLER_H_
 
 #include <math.h>
 #include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
 #include <fftw3.h>
 #include "const.h"
@@ -19,8 +18,8 @@ void RungeKutta4(double* c, double dt);
 void f(double* c, double* dc);
 void laplacian(double* c, double h, double* delsq);
 
-void init_functions(void);
-void free_functions(void);
+void init_solver(double *c);
+void free_solver();
 
 // Temp variables for RungeKutta4 function
 double* k1;
@@ -39,11 +38,5 @@ double       *rval;
 // FFTW plans for real-valued forward & backard 2-D DFT
 fftw_plan rfft2;
 fftw_plan irfft2;
-
-// TODO: it may be best to define the FFTW plans in the main function
-// so we can properly destroy them, etc.
-// Though they'd have to be passed in argument or whatnot - TBD.
-// See also new-array execute functions:
-// http://www.fftw.org/doc/New_002darray-Execute-Functions.html#New_002darray-Execute-Functions
 
 #endif
