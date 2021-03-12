@@ -8,6 +8,7 @@
 #include "window.h"
 #include "shaders.h"
 #include "kernel.h"
+#include <cuda.h>
 
 
 int main(int argc, char* argv[]) {
@@ -71,8 +72,10 @@ int main(int argc, char* argv[]) {
     double skip = 10;
 
     // Initialise Cahn-Hilliard solver
-    init_functions();
-    init_cuda();
+    // init_functions(); //faut plus allouer les k ils sont dans init_cuda
+    double *c_gpu;
+    init_cuda(c_gpu);
+
     double *c = (double*) malloc(n*n*sizeof(double));
     for (int i = 0; i < n*n; i++) {
         c[i] = 2.0*((double)rand() / (double)RAND_MAX ) - 1.0;
@@ -103,10 +106,13 @@ int main(int argc, char* argv[]) {
     while (!glfwWindowShouldClose(window)) {
         // Timestepping
         begin = clock();
+
+        copy_cuda_H2D(c_gpu, c);
         for (int i = 0; i < skip; i++) {
-            RungeKutta4(c, dt);
+            RungeKutta4(c_gpu, dt);
             t++;
         }
+        copy_cuda_D2H(c, c_gpu);
         end = clock();
 
         // Event input
@@ -149,10 +155,10 @@ int main(int argc, char* argv[]) {
 
     glfwDestroyWindow(window);
     glfwTerminate();
-    free_functions();
+    // free_functions();
     free_shaders();
     free(c);
-    free_cuda();
+    free_cuda(c_gpu);
 
     return EXIT_SUCCESS;
 }
