@@ -17,30 +17,14 @@ def update(i):
     return img, title,
 
 
-def laplacian(c):
-    """
-    Compute the Laplacian of c
-    """
-    return (np.roll(c, 1, axis=0) + np.roll(c, -1, axis=0) + np.roll(c, 1, axis=1) + np.roll(c, -1, axis=1) - 4*c) / h**2
-
-
-def f(c):
-    """
-    Compute the derivative dc_dt = f(c)
-    """
-    return laplacian(c**3 - c - a**2*laplacian(c))
-
-
 def integrate(c):
     """
     Time-stepping/integration scheme
     """
-    # Initial condition
-    yield c
-
     # Explicit Euler
+    laplacian = lambda c: (np.roll(c, 1, axis=0) + np.roll(c, -1, axis=0) + np.roll(c, 1, axis=1) + np.roll(c, -1, axis=1) - 4*c) / h**2
     while True:
-        c += dt*f(c)
+        c += dt*laplacian(c**3 - c - a**2*laplacian(c))
         yield c
 
 
