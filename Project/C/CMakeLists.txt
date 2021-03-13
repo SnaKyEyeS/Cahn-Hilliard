@@ -1,4 +1,6 @@
-# Minimum version
+# Minimum version - 3.17
+# Required for find_package(CUDAToolkit)
+# Can be lowered if not using CUDA.
 cmake_minimum_required(VERSION 3.17)
 
 # Project name
@@ -19,6 +21,7 @@ file(GLOB C_SRCS "${PROJECT_SOURCE_DIR}/src/*.c")
 option(USE_CUDA "Compile GPU code, using CUDA." OFF)
 if (USE_CUDA)
     # Enable CUDA
+    message(STATUS "Compiling with CUDA...")
     enable_language(CUDA)
 
     # cuFFT & co
