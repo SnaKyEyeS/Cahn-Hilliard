@@ -26,7 +26,7 @@ int main(int argc, char* argv[]) {
     GLuint vbo_pos;
     glGenBuffers(1, &vbo_pos);
 
-    GLfloat positions[2*N_DISCR*N_DISCR];
+    GLfloat *positions = (GLfloat*) malloc(2*N_DISCR*N_DISCR*sizeof(GLfloat));
     for (int i = 0; i < N_DISCR; i++) {
         for (int j = 0; j < N_DISCR; j++) {
             int ind = i*N_DISCR+j;
@@ -36,7 +36,7 @@ int main(int argc, char* argv[]) {
     }
 
     glBindBuffer(GL_ARRAY_BUFFER, vbo_pos);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(positions), positions, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, 2*N_DISCR*N_DISCR*sizeof(GLfloat), positions, GL_STATIC_DRAW);
 
     // Specify vbo_pos' layout
     GLint posAttrib = glGetAttribLocation(shaderProgram, "position");
@@ -47,7 +47,7 @@ int main(int argc, char* argv[]) {
     GLuint ebo;
     glGenBuffers(1, &ebo);
 
-    GLuint elements[4*(N_DISCR-1)*(N_DISCR-1)];
+    GLuint *elements = (GLuint*) malloc(4*(N_DISCR-1)*(N_DISCR-1)*sizeof(GLuint));
     for (int i = 0; i < N_DISCR-1; i++) {
         for (int j = 0; j < N_DISCR-1; j++) {
             int ind  = i*N_DISCR+j;
@@ -61,7 +61,7 @@ int main(int argc, char* argv[]) {
     }
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements), elements, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 4*(N_DISCR-1)*(N_DISCR-1)*sizeof(GLuint), elements, GL_STATIC_DRAW);
 
     // Simulation parameters
     int t = 0;
@@ -79,7 +79,7 @@ int main(int argc, char* argv[]) {
     GLuint vbo_colors;
     glGenBuffers(1, &vbo_colors);
 
-    GLfloat colors[N_DISCR*N_DISCR];
+    GLfloat *colors = (GLfloat*) malloc(N_DISCR*N_DISCR*sizeof(GLfloat));
     for (int i = 0; i < N_DISCR; i++) {
         for (int j = 0; j < N_DISCR; j++) {
             int ind = i*N_DISCR+j;
@@ -88,7 +88,7 @@ int main(int argc, char* argv[]) {
     }
 
     glBindBuffer(GL_ARRAY_BUFFER, vbo_colors);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(colors), colors, GL_STREAM_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, N_DISCR*N_DISCR*sizeof(GLfloat), colors, GL_STREAM_DRAW);
 
     // Specify vbo_color's layout
     GLint colAttrib = glGetAttribLocation(shaderProgram, "color");
@@ -131,7 +131,7 @@ int main(int argc, char* argv[]) {
             colors[i] = (float) ((c[i] + 1.0)/2.0);
         }
         glBindBuffer(GL_ARRAY_BUFFER, vbo_colors);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(colors), colors, GL_STREAM_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, N_DISCR*N_DISCR*sizeof(GLfloat), colors, GL_STREAM_DRAW);
         glDrawElements(GL_LINES_ADJACENCY, 4*(N_DISCR-1)*(N_DISCR-1), GL_UNSIGNED_INT, 0);
         // end = clock();
 
@@ -152,6 +152,9 @@ int main(int argc, char* argv[]) {
     free_shaders();
     free_solver();
     free(c);
+    free(colors);
+    free(elements);
+    free(positions);
 
     return EXIT_SUCCESS;
 }
