@@ -14,40 +14,24 @@ def update(i):
     for _ in range(skip_frame):
         c = next(sol)
 
-    img.set_data(c)
+    img.set_data(irfft2(c))
     title.set_text(f"Time = {i*skip_frame*dt:.6f}")
     return img, title,
-
-
-def laplacian(c):
-    """
-    Compute the Laplacian of c
-    """
-    return irfft2(k_deriv*rfft2(c))
-
-
-def f(c):
-    """
-    Compute the derivative dc_dt = f(c)
-    """
-    return laplacian(c**3 - c - a**2*laplacian(c))
 
 
 def integrate(c):
     """
     Time-stepping/integration scheme
     """
-    # Initial condition
-    yield c
-
     # Runge-Kutta 4
+    f = lambda c: k*(rfft2(irfft2(c)**3) - c - a**2*k*c)
     while True:
         k1 = f(c)
         k2 = f(c + dt*k1/2)
         k3 = f(c + dt*k2/2)
         k4 = f(c + dt*k3)
-        c += dt*(k1 + 2*k2 + 2*k3 + k4)/6
 
+        c += dt*(k1 + 2*k2 + 2*k3 + k4)/6
         yield c
 
 
@@ -60,17 +44,17 @@ skip_frame = 10
 
 # Initialise vectors
 x, h = np.linspace(0, 1, n, endpoint=False, retstep=True)
-c = 2*np.random.rand(n, n) - 1
+c = rfft2(2*np.random.rand(n, n) - 1)   # We work in frequency domain
 sol = integrate(c)
 
 # Initialize wavelength for second derivative to avoid a repetitive operation
 # Since we use rfftn, one dim is n/2+1 (rfftfreq) and the other is n (fftfreq)
 k_x, k_y = np.meshgrid(rfftfreq(n, h/(2*np.pi)), fftfreq(n, h/(2*np.pi)))
-k_deriv = -(k_x**2 + k_y**2)
+k = -(k_x**2 + k_y**2)
 
 # Initialize animation
 fig, ax = plt.subplots()
-img = ax.imshow(c, cmap="jet", vmin=-1, vmax=1)
+img = ax.imshow(irfft2(c), cmap="jet", vmin=-1, vmax=1)
 fig.colorbar(img, ax=ax)
 ax.axis("off")
 title = ax.text(.5, .1, "", bbox={'facecolor': 'w', 'alpha': 0.7, 'pad': 5}, transform=ax.transAxes, ha="center")
