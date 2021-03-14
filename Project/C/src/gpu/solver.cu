@@ -59,11 +59,11 @@ void f(double* c, double* dc) {
  *  Initialise the various stuff
  */
 void init_solver(double *c) {
-    grid.x = 8;
-    grid.y = 13;
+    grid.x = N_DISCR/128;
+    grid.y = 1 + N_DISCR/2;
     grid.z = 1;
-    threads.x = 16;
-    threads.y = 5;
+    threads.x = 128;
+    threads.y = 1;
     threads.z = 1;
 
     cudaMalloc((void **) &k1, real_size);
