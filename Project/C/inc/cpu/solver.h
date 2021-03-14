@@ -13,7 +13,6 @@
 
 void RungeKutta4(double* c, double dt);
 void f(double* c, double* dc);
-void laplacian(double* c, double h, double* delsq);
 
 void init_solver(double *c);
 void free_solver();
