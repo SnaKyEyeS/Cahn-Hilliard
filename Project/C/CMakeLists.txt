@@ -55,17 +55,6 @@ else (USE_CUDA)
     endif (MKL_FOUND)
 endif (USE_CUDA)
 
-# OpenMP
-option(USE_OPENMP "Compile parallel code, using OpenMP." OFF)
-if (USE_OPENMP)
-    message(STATUS "Compiling with OpenMP...")
-    find_package(OpenMP REQUIRED)
-    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-    include_directories(${OPENMP_C_INCLUDE_DIRS})
-    set(EXT_LIBS ${EXT_LIBS} ${OPENMP_C_LIBRARIES})
-    add_definitions(-DUSE_OPENMP)
-endif (USE_OPENMP)
-
 # GLEW
 find_package(GLEW REQUIRED)
 include_directories(${GLEW_INCLUDE_DIRS})
