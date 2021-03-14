@@ -17,6 +17,14 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 include_directories(${PROJECT_SOURCE_DIR}/inc)
 file(GLOB C_SRCS "${PROJECT_SOURCE_DIR}/src/*.c")
 
+# Compile options
+option(N_DISCR "Discretisation grid to use." OFF)
+if (NOT N_DISCR)
+    set(N_DISCR 128)
+endif (NOT N_DISCR)
+message(STATUS "Using a ${N_DISCR}x${N_DISCR} grid.")
+add_definitions(-DN_DISCR=${N_DISCR})
+
 # CPU or GPU (CUDA)
 option(USE_CUDA "Compile GPU code, using CUDA." OFF)
 if (USE_CUDA)

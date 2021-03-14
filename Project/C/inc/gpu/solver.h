@@ -3,7 +3,7 @@
 
 #include <cuda.h>
 #include <cufft.h>
-#include "const.h"
+
 
 // Temp variables for RungeKutta4 function
 double* k1;

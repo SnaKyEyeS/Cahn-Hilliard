@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <fftw3.h>
-#include "const.h"
 
 
 #define REAL 0

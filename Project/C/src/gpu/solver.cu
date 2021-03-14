@@ -141,6 +141,6 @@ __global__ void deriv(cufftDoubleComplex *c_hat, cufftDoubleComplex* cval, doubl
 
     // Compute \hat{F}
     int ind = i*(N_DISCR/2+1)+j;
-    cval[ind].x = hh*k * (cval[ind].x - c_hat[ind].x - A*A*k*c_hat[ind].x);
-    cval[ind].y = hh*k * (cval[ind].y - c_hat[ind].y - A*A*k*c_hat[ind].y);
+    cval[ind].x = hh*k * (cval[ind].x - c_hat[ind].x - 1e-4*k*c_hat[ind].x);
+    cval[ind].y = hh*k * (cval[ind].y - c_hat[ind].y - 1e-4*k*c_hat[ind].y);
 }

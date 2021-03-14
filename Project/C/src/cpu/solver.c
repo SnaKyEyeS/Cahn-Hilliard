@@ -58,8 +58,8 @@ void f(double* c, double* dc) {
 
     // Compute F
     for(int i = 0; i < nCplxElem; i++) {
-        cval[i][REAL] = k[i] * (cval[i][REAL] - c_hat[i][REAL] - A*A*k[i]*c_hat[i][REAL]);
-        cval[i][CPLX] = k[i] * (cval[i][CPLX] - c_hat[i][CPLX] - A*A*k[i]*c_hat[i][CPLX]);
+        cval[i][REAL] = k[i] * (cval[i][REAL] - c_hat[i][REAL] - 1e-4*k[i]*c_hat[i][REAL]);
+        cval[i][CPLX] = k[i] * (cval[i][CPLX] - c_hat[i][CPLX] - 1e-4*k[i]*c_hat[i][CPLX]);
     }
     fftw_execute(irfft2);
     for (int i = 0; i < nRealElem; i++) {
