@@ -7,9 +7,6 @@
 #include <fftw3.h>
 
 
-#define REAL 0
-#define CPLX 1
-
 void step(double *c, double dt);
 void init_solver(double *c);
 void free_solver();
