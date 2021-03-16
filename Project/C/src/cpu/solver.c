@@ -37,8 +37,8 @@ void step(double *c, double dt) {
 
         // Compute c_1
         for(int i = 0; i < nCplxElem; i++) {
-            cval[i][REAL] = hh * (c_hat_prev[i][REAL] - dt*k[i]*f_hat_prev[i][REAL]) / (1 + dt*1e-4*k[i]*k[i]);
-            cval[i][CPLX] = hh * (c_hat_prev[i][CPLX] - dt*k[i]*f_hat_prev[i][CPLX]) / (1 + dt*1e-4*k[i]*k[i]);
+            cval[i][REAL] = hh * (c_hat_prev[i][REAL] - dt*k[i]*f_hat_prev[i][REAL]) / (1.0 + dt*1e-4*k[i]*k[i]);
+            cval[i][CPLX] = hh * (c_hat_prev[i][CPLX] - dt*k[i]*f_hat_prev[i][CPLX]) / (1.0 + dt*1e-4*k[i]*k[i]);
         }
         fftw_execute(irfft2);
         memcpy(c, rval, nRealElem*sizeof(double));
@@ -51,7 +51,7 @@ void step(double *c, double dt) {
     fftw_execute(rfft2);
     memcpy(c_hat, cval, nCplxElem*sizeof(fftw_complex));
 
-    // Compute ĉ³ - c
+    // Compute ĉ³ - ĉ
     for(int i = 0; i < nRealElem; i++) {
         rval[i] = c[i]*c[i]*c[i] - c[i];
     }
@@ -60,8 +60,8 @@ void step(double *c, double dt) {
 
     // Compute c_{i+1}
     for(int i = 0; i < nCplxElem; i++) {
-        cval[i][REAL] = hh * (4*c_hat[i][REAL] - c_hat_prev[i][REAL] - 2*dt*k[i] * (2*f_hat[i][REAL] - f_hat_prev[i][REAL])) / (3 + 2*dt*1e-4*k[i]*k[i]);
-        cval[i][CPLX] = hh * (4*c_hat[i][CPLX] - c_hat_prev[i][CPLX] - 2*dt*k[i] * (2*f_hat[i][CPLX] - f_hat_prev[i][CPLX])) / (3 + 2*dt*1e-4*k[i]*k[i]);
+        cval[i][REAL] = hh * (4.0*c_hat[i][REAL] - c_hat_prev[i][REAL] - 2.0*dt*k[i] * (2.0*f_hat[i][REAL] - f_hat_prev[i][REAL])) / (3 + 2.0*dt*1e-4*k[i]*k[i]);
+        cval[i][CPLX] = hh * (4.0*c_hat[i][CPLX] - c_hat_prev[i][CPLX] - 2.0*dt*k[i] * (2.0*f_hat[i][CPLX] - f_hat_prev[i][CPLX])) / (3.0 + 2.0*dt*1e-4*k[i]*k[i]);
     }
     fftw_execute(irfft2);
     memcpy(c, rval, nRealElem*sizeof(double));
