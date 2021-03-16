@@ -11,15 +11,8 @@
 #define CPLX 1
 
 void step(double *c, double dt);
-void RungeKutta4(double* c, double dt);
-void f(double* c, double* dc);
-
 void init_solver(double *c);
 void free_solver();
-
-// Temp variables for f function
-fftw_complex *c_hat;
-double       *k;
 
 // FFTW plans for real-valued forward & backard 2-D DFT
 fftw_complex *cval;

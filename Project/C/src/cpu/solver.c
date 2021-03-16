@@ -13,8 +13,10 @@ int nCplxElem = N_DISCR*(N_DISCR/2+1);
  *  Return value is done in-place.
  */
 int init = 1;
+double *k;
 fftw_complex *f_hat;
 fftw_complex *f_hat_prev;
+fftw_complex *c_hat;
 fftw_complex *c_hat_prev;
 void step(double *c, double dt) {
     // Initialise solver; perform first iteration
@@ -69,87 +71,16 @@ void step(double *c, double dt) {
 }
 
 /*
- *  Compute one iteration of Runge Kutta 4
- *  Return value is done in-place.
- */
-double* k1;
-double* k2;
-double* k3;
-double* k4;
-double* tmp;
-void RungeKutta4(double* c, double dt){
-    // K1
-    f(c, k1);
-
-    // K2
-    for(int i = 0; i < nRealElem; i++) {
-        tmp[i] = c[i] + dt*k1[i]/2.0;
-    }
-    f(tmp, k2);
-
-    // K3
-    for(int i = 0; i < nRealElem; i++) {
-        tmp[i] = c[i] + dt*k2[i]/2.0;
-    }
-    f(tmp, k3);
-
-    // K4
-    for(int i = 0; i < nRealElem; i++) {
-        tmp[i] = c[i] + dt*k3[i];
-    }
-    f(tmp, k4);
-
-    // C_i+1
-    for(int i = 0; i < nRealElem; i++) {
-        c[i] += dt*(k1[i] + 2*k2[i] + 2*k3[i] + k4[i])/6.0;
-    }
-}
-
-/*
- *  Compute the time derivative of c
- *  Return value is not in-place.
- */
-void f(double* c, double* dc) {
-    // Compute ĉ
-    memcpy(rval, c, nRealElem*sizeof(double));
-    fftw_execute(rfft2);
-    memcpy(c_hat, cval, nCplxElem*sizeof(fftw_complex));
-
-    // Compute ĉ³
-    for(int i = 0; i < nRealElem; i++) {
-        rval[i] = c[i]*c[i]*c[i];
-    }
-    fftw_execute(rfft2);
-
-    // Compute F
-    for(int i = 0; i < nCplxElem; i++) {
-        cval[i][REAL] = k[i] * (c_hat[i][REAL] - cval[i][REAL] - 1e-4*k[i]*c_hat[i][REAL]);
-        cval[i][CPLX] = k[i] * (c_hat[i][CPLX] - cval[i][CPLX] - 1e-4*k[i]*c_hat[i][CPLX]);
-    }
-    fftw_execute(irfft2);
-    for (int i = 0; i < nRealElem; i++) {
-        dc[i] = hh*rval[i];
-    }
-}
-
-/*
  *  Initialise the various stuff
  */
 void init_solver(double *c) {
     // Semi-implicit scheme
-    c_hat_prev = fftw_alloc_complex(nCplxElem);
-    f_hat_prev = fftw_alloc_complex(nCplxElem);
-    f_hat = fftw_alloc_complex(nCplxElem);
-
-    // RK4
-    k1    = (double*) malloc(nRealElem*sizeof(double));
-    k2    = (double*) malloc(nRealElem*sizeof(double));
-    k3    = (double*) malloc(nRealElem*sizeof(double));
-    k4    = (double*) malloc(nRealElem*sizeof(double));
-    tmp   = (double*) malloc(nRealElem*sizeof(double));
-
-    // F
     c_hat = fftw_alloc_complex(nCplxElem);
+    c_hat_prev = fftw_alloc_complex(nCplxElem);
+    f_hat = fftw_alloc_complex(nCplxElem);
+    f_hat_prev = fftw_alloc_complex(nCplxElem);
+
+    // Wavenumber k
     k = (double*) malloc(nCplxElem*sizeof(double));
     double factor = 4*M_PI*M_PI;
     for (int i = 0; i < N_DISCR; i++) {
@@ -171,20 +102,11 @@ void init_solver(double *c) {
  */
 void free_solver() {
     // Semi-implicit scheme
-    fftw_free(c_hat_prev);
-    fftw_free(f_hat_prev);
-    fftw_free(f_hat);
-
-    // RK4
-    free(k1);
-    free(k2);
-    free(k3);
-    free(k4);
-    free(tmp);
-
-    // F
-    free(k);
     fftw_free(c_hat);
+    fftw_free(c_hat_prev);
+    fftw_free(f_hat);
+    fftw_free(f_hat_prev);
+    free(k);
 
     // FFTW
     fftw_free(cval);
