@@ -12,15 +12,17 @@ int nCplxElem = N_DISCR*(N_DISCR/2+1);
  *  Compute one iteration using BDF2 & AB2
  *  Return value is done in-place.
  */
-int init = 1;
+int iter = 1;
+void *tmp;
 double *k;
+fftw_complex *buffer;
 fftw_complex *f_hat;
 fftw_complex *f_hat_prev;
 fftw_complex *c_hat;
 fftw_complex *c_hat_prev;
 void step(double *c, double dt) {
     // Initialise solver; perform first iteration
-    if (init) {
+    if (iter == 1) {
         // Compute ĉ
         memcpy(rval, c, nRealElem*sizeof(double));
         fftw_execute(rfft2);
@@ -41,8 +43,7 @@ void step(double *c, double dt) {
         fftw_execute(irfft2);
         memcpy(c, rval, nRealElem*sizeof(double));
 
-        // Init done !
-        init = 0;
+        iter++;
     }
 
     // Compute ĉ
@@ -66,8 +67,12 @@ void step(double *c, double dt) {
     memcpy(c, rval, nRealElem*sizeof(double));
 
     // Save variables for next iteration
-    memcpy(c_hat_prev, c_hat, nCplxElem*sizeof(fftw_complex));
-    memcpy(f_hat_prev, f_hat, nCplxElem*sizeof(fftw_complex));
+    tmp = c_hat_prev;
+    c_hat_prev = c_hat;
+    c_hat = tmp;
+    tmp = f_hat_prev;
+    f_hat_prev = f_hat;
+    f_hat = tmp;
 }
 
 /*
@@ -75,10 +80,11 @@ void step(double *c, double dt) {
  */
 void init_solver(double *c) {
     // Semi-implicit scheme
-    c_hat = fftw_alloc_complex(nCplxElem);
-    c_hat_prev = fftw_alloc_complex(nCplxElem);
-    f_hat = fftw_alloc_complex(nCplxElem);
-    f_hat_prev = fftw_alloc_complex(nCplxElem);
+    buffer = fftw_alloc_complex(4*nCplxElem);
+    c_hat      = &buffer[0];
+    c_hat_prev = &buffer[  nCplxElem];
+    f_hat      = &buffer[2*nCplxElem];
+    f_hat_prev = &buffer[3*nCplxElem];
 
     // Wavenumber k
     k = (double*) malloc(nCplxElem*sizeof(double));
@@ -102,10 +108,7 @@ void init_solver(double *c) {
  */
 void free_solver() {
     // Semi-implicit scheme
-    fftw_free(c_hat);
-    fftw_free(c_hat_prev);
-    fftw_free(f_hat);
-    fftw_free(f_hat_prev);
+    fftw_free(buffer);
     free(k);
 
     // FFTW
