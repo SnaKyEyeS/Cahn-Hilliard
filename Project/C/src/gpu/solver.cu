@@ -1,5 +1,6 @@
 extern "C" {
     #include "solver.h"
+    #include <stdio.h>
 }
 
 #define REAL 0
@@ -18,41 +19,50 @@ double hh = 1.0 / (N_DISCR*N_DISCR);
  *  Compute one iteration of Runge Kutta 4
  *  Return value is done in-place.
  */
-void step(double* c, double dt){
-    // K1
-    f(c_gpu, k1);
+int iter = 1;
+double *c_gpu;
+double *c_cube;
+cufftDoubleComplex *tmp;
+cufftDoubleComplex *c_hat;
+cufftDoubleComplex *c_hat_prev;
+cufftDoubleComplex *f_hat;
+cufftDoubleComplex *f_hat_prev;
 
-    // K2
-    k12_sum<<<Nblocks, Nthreads>>>(c_gpu, k1, tmp, dt);
-    f(tmp, k2);
+void step(double* c, double dt) {
+    // Initialise solver; perform first iteration
+    // if (iter == 1) {
+        // Compute ĉ
+        cufftExecD2Z(rfft, c_gpu, c_hat_prev);
 
-    // K3
-    k12_sum<<<Nblocks, Nthreads>>>(c_gpu, k2, tmp, dt);
-    f(tmp, k3);
+        // Compute ĉ³ - ĉ
+        cube<<<Nblocks, Nthreads>>>(c_gpu, c_cube);
+        cufftExecD2Z(rfft, c_cube, f_hat_prev);
 
-    // K4
-    k3_sum<<<Nblocks, Nthreads>>>(c_gpu, k3, tmp, dt);
-    f(tmp, k4);
+        // Compute c_1
+        first_order<<<grid, threads>>>(c_hat_prev, f_hat_prev, dt, hh);
+        cufftExecZ2D(irfft, c_hat_prev, c_gpu);
 
-    // C_i+1
-    k_sum_tot<<<Nblocks, Nthreads>>>(c_gpu, k1, k2, k3, k4, dt);
-}
+        iter++;
+    // }
 
-/*
- *  Compute the time derivative of c
- *  Return value is not in-place.
- */
-void f(double* c, double* dc) {
     // Compute ĉ
-    cufftExecD2Z(rfft, c, c_hat);
-
-    // Compute ĉ³
-    cube<<<Nblocks, Nthreads>>>(c, c_cube);
-    cufftExecD2Z(rfft, c_cube, cval);
-
-    // Compute F
-    deriv<<<grid, threads>>>(c_hat, cval, hh);
-    cufftExecZ2D(irfft, cval, dc);
+    // cufftExecD2Z(rfft, c_gpu, c_hat);
+    //
+    // // Compute ĉ³ - ĉ
+    // cube<<<Nblocks, Nthreads>>>(c_gpu, c_cube);
+    // cufftExecD2Z(rfft, c_cube, f_hat);
+    //
+    // // Compute c_{i+1}
+    // second_order<<<grid, threads>>>(c_hat, c_hat_prev, f_hat, f_hat_prev, dt, hh);
+    // cufftExecZ2D(irfft, c_hat, c_gpu);
+    //
+    // // Save variables for next iteration
+    // tmp = c_hat_prev;
+    // c_hat_prev = c_hat;
+    // c_hat = tmp;
+    // tmp = f_hat_prev;
+    // f_hat_prev = f_hat;
+    // f_hat = tmp;
 }
 
 /*
@@ -66,19 +76,16 @@ void init_solver(double *c) {
     threads.y = 1;
     threads.z = 1;
 
-    cudaMalloc((void **) &k1, real_size);
-    cudaMalloc((void **) &k2, real_size);
-    cudaMalloc((void **) &k3, real_size);
-    cudaMalloc((void **) &k4, real_size);
-    cudaMalloc((void **) &tmp, real_size);
+    // Semi-implicit scheme
+    cudaMalloc((void **) &c_gpu,      real_size);
+    cudaMalloc((void **) &c_cube,     real_size);
+    cudaMalloc((void **) &c_hat,      cplx_size);
+    cudaMalloc((void **) &c_hat_prev, cplx_size);
+    cudaMalloc((void **) &f_hat,      cplx_size);
+    cudaMalloc((void **) &f_hat_prev, cplx_size);
 
-    cudaMalloc((void **) &c_gpu, real_size);
-    cudaMalloc((void **) &c_cube, real_size);
-
-    cudaMalloc((void **) &c_hat, cplx_size);
-    cudaMalloc((void **) &cval, cplx_size);
-
-    cufftPlan2d(&rfft, N_DISCR, N_DISCR, CUFFT_D2Z);
+    // cuFFT
+    cufftPlan2d(&rfft,  N_DISCR, N_DISCR, CUFFT_D2Z);
     cufftPlan2d(&irfft, N_DISCR, N_DISCR, CUFFT_Z2D);
 
     // Initialise C
@@ -89,17 +96,13 @@ void init_solver(double *c) {
  *  Free the various allocated arrays
  */
 void free_solver() {
-    cudaFree(k1);
-    cudaFree(k2);
-    cudaFree(k3);
-    cudaFree(k4);
-    cudaFree(tmp);
 
     cudaFree(c_gpu);
     cudaFree(c_cube);
-
-    cudaFree(cval);
     cudaFree(c_hat);
+    cudaFree(c_hat_prev);
+    cudaFree(f_hat);
+    cudaFree(f_hat_prev);
 
     cufftDestroy(rfft);
     cufftDestroy(irfft);
@@ -115,32 +118,33 @@ void cudaGetSolution(double *c) {
 /*
  *  Kernel stuff
  */
-__global__ void k12_sum(double* c, double* k, double* tmp, double dt) {
-    int i = blockIdx.x * blockDim.x + threadIdx.x;
-    tmp[i] = c[i] + dt*k[i]/2.0;
-}
-__global__ void k3_sum(double* c, double* k, double* tmp, double dt) {
-    int i = blockIdx.x * blockDim.x + threadIdx.x;
-    tmp[i] = c[i] + dt*k[i];
-}
-__global__ void k_sum_tot(double* c, double* k1, double* k2, double* k3, double* k4, double dt) {
-    int i = blockIdx.x * blockDim.x + threadIdx.x;
-    c[i] += dt*(k1[i] + 2*k2[i] + 2*k3[i] + k4[i])/6.0;
-}
 __global__ void cube(double* c, double* cube) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
-    cube[i] = c[i]*c[i]*c[i];
+    cube[i] = c[i]*c[i]*c[i] - c[i];
 }
-__global__ void deriv(cufftDoubleComplex *c_hat, cufftDoubleComplex* cval, double hh) {
+__global__ void first_order(cufftDoubleComplex *c_hat, cufftDoubleComplex* f_hat, double dt, double hh) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     int j = blockIdx.y * blockDim.y + threadIdx.y;
 
     // Wavenumber
     double l = (i < N_DISCR/2) ? i : i-N_DISCR;
-    double k = - 4.0*M_PI*M_PI * (j*j + l*l);
+    double k = 4.0*M_PI*M_PI * (j*j + l*l);
 
     // Compute \hat{F}
     int ind = i*(N_DISCR/2+1)+j;
-    cval[ind].x = hh*k * (cval[ind].x - c_hat[ind].x - 1e-4*k*c_hat[ind].x);
-    cval[ind].y = hh*k * (cval[ind].y - c_hat[ind].y - 1e-4*k*c_hat[ind].y);
+    c_hat[ind].x = hh * (c_hat[ind].x - dt*k*f_hat[ind].x) / (1.0 + dt*1e-4*k*k);
+    c_hat[ind].y = hh * (c_hat[ind].y - dt*k*f_hat[ind].y) / (1.0 + dt*1e-4*k*k);
+}
+__global__ void second_order(cufftDoubleComplex *c_hat, cufftDoubleComplex* c_hat_prev, cufftDoubleComplex* f_hat, cufftDoubleComplex* f_hat_prev, double dt, double hh) {
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    int j = blockIdx.y * blockDim.y + threadIdx.y;
+
+    // Wavenumber
+    double l = (i < N_DISCR/2) ? i : i-N_DISCR;
+    double k = 4.0*M_PI*M_PI * (j*j + l*l);
+
+    // Compute \hat{F}
+    int ind = i*(N_DISCR/2+1)+j;
+    c_hat[ind].x = hh * (4.0*c_hat[ind].x - c_hat_prev[ind].x - 2.0*dt*k * (2.0*f_hat[ind].x - f_hat_prev[ind].x)) / (3.0 + 2.0*dt*1e-4*k*k);
+    c_hat[ind].y = hh * (4.0*c_hat[ind].y - c_hat_prev[ind].y - 2.0*dt*k * (2.0*f_hat[ind].y - f_hat_prev[ind].y)) / (3.0 + 2.0*dt*1e-4*k*k);
 }
