@@ -21,10 +21,33 @@ def update(i):
 
 def integrate(c):
     """
-    Time-stepping/integration scheme
+    Time-stepping/integration scheme using a semi-implicit scheme combining
+    the Backward-Differentiation Formulae & Adams-Bashforth
     """
-    # Runge-Kutta 4
-    f = lambda c: k*(rfft2(irfft2(c)**3) - c - a**2*k*c)
+    f = lambda c: rfft2(irfft2(c)**3) - c
+
+    # First step
+    c_prev = c
+    f_prev = f(c)
+    c -= dt*k*f_prev
+    c /= (1 + dt*(a*k)**2)
+    yield c
+
+    while True:
+        c_curr = c
+        f_curr = f(c_curr)
+        c = 4*c_curr - c_prev - 2*dt*k*(2*f_curr - f_prev)
+        c /= (3 + 2*dt*(a*k)**2)
+        c_prev = c_curr
+        f_prev = f_curr
+        yield c
+
+
+def rk4(c):
+    """
+    Time stepping/integration scheme using the classical 4th order Runge-Kutta
+    """
+    f = lambda c: -k*(rfft2(irfft2(c)**3) - c + a**2*k*c)
     while True:
         k1 = f(c)
         k2 = f(c + dt*k1/2)
@@ -38,7 +61,7 @@ def integrate(c):
 # Problem parameters
 a = 1e-2
 n = 128
-dt = 1e-6/4
+dt = 1e-6
 n_step = 12000*4
 skip_frame = 10
 
@@ -50,7 +73,7 @@ sol = integrate(c)
 # Initialize wavelength for second derivative to avoid a repetitive operation
 # Since we use rfftn, one dim is n/2+1 (rfftfreq) and the other is n (fftfreq)
 k_x, k_y = np.meshgrid(rfftfreq(n, h/(2*np.pi)), fftfreq(n, h/(2*np.pi)))
-k = -(k_x**2 + k_y**2)
+k = k_x**2 + k_y**2
 
 # Initialize animation
 fig, ax = plt.subplots()
