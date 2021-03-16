@@ -18,7 +18,7 @@ double hh = 1.0 / (N_DISCR*N_DISCR);
  *  Compute one iteration of Runge Kutta 4
  *  Return value is done in-place.
  */
-void RungeKutta4(double* c, double dt){
+void step(double* c, double dt){
     // K1
     f(c_gpu, k1);
 

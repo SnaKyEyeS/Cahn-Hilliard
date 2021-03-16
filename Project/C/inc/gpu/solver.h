@@ -29,7 +29,7 @@ __global__ void k_sum_tot(double* c, double* k1, double* k2, double* k3, double*
 __global__ void cube(double* c, double* cube);
 __global__ void deriv(cufftDoubleComplex *c_hat, cufftDoubleComplex* cval, double hh);
 
-void RungeKutta4(double* c, double dt);
+void step(double* c, double dt);
 void f(double* c, double* dc);
 
 void init_solver(double *c);

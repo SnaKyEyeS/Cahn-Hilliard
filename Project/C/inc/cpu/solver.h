@@ -10,18 +10,12 @@
 #define REAL 0
 #define CPLX 1
 
+void step(double *c, double dt);
 void RungeKutta4(double* c, double dt);
 void f(double* c, double* dc);
 
 void init_solver(double *c);
 void free_solver();
-
-// Temp variables for RungeKutta4 function
-double* k1;
-double* k2;
-double* k3;
-double* k4;
-double* tmp;
 
 // Temp variables for f function
 fftw_complex *c_hat;
