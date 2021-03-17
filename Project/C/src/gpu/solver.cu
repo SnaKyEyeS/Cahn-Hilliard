@@ -7,7 +7,7 @@ extern "C" {
 #define CPLX 1
 
 size_t real_size = N_DISCR*N_DISCR*sizeof(double);
-size_t cplx_size = N_DISCR*N_DISCR*sizeof(cufftDoubleComplex);
+size_t cplx_size = N_DISCR*(1+N_DISCR/2)*sizeof(cufftDoubleComplex);
 
 int Nblocks = (N_DISCR*N_DISCR)/256;
 int Nthreads = 256;
