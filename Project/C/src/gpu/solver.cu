@@ -23,6 +23,7 @@ int iter = 1;
 double *c_gpu;
 double *c_cube;
 cufftDoubleComplex *tmp;
+cufftDoubleComplex *out;
 cufftDoubleComplex *c_hat;
 cufftDoubleComplex *c_hat_prev;
 cufftDoubleComplex *f_hat;
@@ -39,8 +40,8 @@ void step(double* c, double dt) {
         cufftExecD2Z(rfft, c_cube, f_hat_prev);
 
         // Compute c_1
-        first_order<<<grid, threads>>>(c_hat_prev, f_hat_prev, dt, hh, tmp);
-        cufftExecZ2D(irfft, tmp, c_gpu);
+        first_order<<<grid, threads>>>(c_hat_prev, f_hat_prev, dt, hh, out);
+        cufftExecZ2D(irfft, out, c_gpu);
 
         iter++;
     }
@@ -53,12 +54,16 @@ void step(double* c, double dt) {
     cufftExecD2Z(rfft, c_cube, f_hat);
 
     // Compute c_{i+1}
-    second_order<<<grid, threads>>>(c_hat, c_hat_prev, f_hat, f_hat_prev, dt, hh, tmp);
-    cufftExecZ2D(irfft, tmp, c_gpu);
+    second_order<<<grid, threads>>>(c_hat, c_hat_prev, f_hat, f_hat_prev, dt, hh, out);
+    cufftExecZ2D(irfft, out, c_gpu);
 
     // Save variables for next iteration
-    cudaMemcpy(c_hat_prev, c_hat, cplx_size, cudaMemcpyDeviceToDevice);
-    cudaMemcpy(f_hat_prev, f_hat, cplx_size, cudaMemcpyDeviceToDevice);
+    tmp = c_hat_prev;
+    c_hat_prev = c_hat;
+    c_hat = tmp;
+    tmp = f_hat_prev;
+    f_hat_prev = f_hat;
+    f_hat = tmp;
 }
 
 /*
@@ -75,7 +80,7 @@ void init_solver(double *c) {
     // Semi-implicit scheme
     cudaMalloc((void **) &c_gpu,      real_size);
     cudaMalloc((void **) &c_cube,     real_size);
-    cudaMalloc((void **) &tmp,        cplx_size);
+    cudaMalloc((void **) &out,        cplx_size);
     cudaMalloc((void **) &c_hat,      cplx_size);
     cudaMalloc((void **) &c_hat_prev, cplx_size);
     cudaMalloc((void **) &f_hat,      cplx_size);
@@ -96,6 +101,7 @@ void free_solver() {
 
     cudaFree(c_gpu);
     cudaFree(c_cube);
+    cudaFree(out);
     cudaFree(c_hat);
     cudaFree(c_hat_prev);
     cudaFree(f_hat);
