@@ -5,14 +5,16 @@
 #include <cufft.h>
 
 
+typedef complex cufftDoubleComplex;
+
 cufftHandle rfft;
 cufftHandle irfft;
 
 dim3 grid, threads;
 
 __global__ void cube(double* c, double* cube);
-__global__ void first_order(cufftDoubleComplex *c_hat, cufftDoubleComplex* f_hat, double dt, double hh, cufftDoubleComplex *out);
-__global__ void second_order(cufftDoubleComplex *c_hat, cufftDoubleComplex* c_hat_prev, cufftDoubleComplex* f_hat, cufftDoubleComplex* f_hat_prev, double dt, double hh, cufftDoubleComplex *out);
+__global__ void first_order(complex *c_hat, complex* f_hat, double dt, double hh, complex *out);
+__global__ void second_order(complex *c_hat, complex* c_hat_prev, complex* f_hat, complex* f_hat_prev, double dt, double hh, complex *out);
 
 void step(double* c, double dt);
 void init_solver(double *c);

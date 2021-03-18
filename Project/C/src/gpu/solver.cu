@@ -7,7 +7,7 @@ extern "C" {
 #define CPLX 1
 
 size_t real_size = N_DISCR*N_DISCR*sizeof(double);
-size_t cplx_size = N_DISCR*(1+N_DISCR/2)*sizeof(cufftDoubleComplex);
+size_t cplx_size = N_DISCR*(1+N_DISCR/2)*sizeof(complex);
 
 int Nblocks = (N_DISCR*N_DISCR)/256;
 int Nthreads = 256;
@@ -22,12 +22,12 @@ double hh = 1.0 / (N_DISCR*N_DISCR);
 int iter = 1;
 double *c_gpu;
 double *c_cube;
-cufftDoubleComplex *tmp;
-cufftDoubleComplex *out;
-cufftDoubleComplex *c_hat;
-cufftDoubleComplex *c_hat_prev;
-cufftDoubleComplex *f_hat;
-cufftDoubleComplex *f_hat_prev;
+complex *tmp;
+complex *out;
+complex *c_hat;
+complex *c_hat_prev;
+complex *f_hat;
+complex *f_hat_prev;
 
 void step(double* c, double dt) {
     // Initialise solver; perform first iteration
@@ -126,7 +126,7 @@ __global__ void cube(double* c, double* cube) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     cube[i] = c[i]*c[i]*c[i] - c[i];
 }
-__global__ void first_order(cufftDoubleComplex *c_hat, cufftDoubleComplex* f_hat, double dt, double hh, cufftDoubleComplex *out) {
+__global__ void first_order(complex *c_hat, complex* f_hat, double dt, double hh, complex *out) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     int j = blockIdx.y * blockDim.y + threadIdx.y;
 
@@ -139,7 +139,7 @@ __global__ void first_order(cufftDoubleComplex *c_hat, cufftDoubleComplex* f_hat
     out[ind].x = hh * (c_hat[ind].x - dt*k*f_hat[ind].x) / (1.0 + dt*1e-4*k*k);
     out[ind].y = hh * (c_hat[ind].y - dt*k*f_hat[ind].y) / (1.0 + dt*1e-4*k*k);
 }
-__global__ void second_order(cufftDoubleComplex *c_hat, cufftDoubleComplex* c_hat_prev, cufftDoubleComplex* f_hat, cufftDoubleComplex* f_hat_prev, double dt, double hh, cufftDoubleComplex *out) {
+__global__ void second_order(complex *c_hat, complex* c_hat_prev, complex* f_hat, complex* f_hat_prev, double dt, double hh, complex *out) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     int j = blockIdx.y * blockDim.y + threadIdx.y;
 
