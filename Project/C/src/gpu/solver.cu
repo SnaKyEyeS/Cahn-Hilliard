@@ -30,7 +30,7 @@ cufftDoubleComplex *f_hat_prev;
 
 void step(double* c, double dt) {
     // Initialise solver; perform first iteration
-    // if (iter == 1) {
+    if (iter == 1) {
         // Compute ĉ
         cufftExecD2Z(rfft, c_gpu, c_hat_prev);
 
@@ -39,30 +39,26 @@ void step(double* c, double dt) {
         cufftExecD2Z(rfft, c_cube, f_hat_prev);
 
         // Compute c_1
-        first_order<<<grid, threads>>>(c_hat_prev, f_hat_prev, dt, hh);
-        cufftExecZ2D(irfft, c_hat_prev, c_gpu);
+        first_order<<<grid, threads>>>(c_hat_prev, f_hat_prev, dt, hh, tmp);
+        cufftExecZ2D(irfft, tmp, c_gpu);
 
         iter++;
-    // }
+    }
 
     // Compute ĉ
-    // cufftExecD2Z(rfft, c_gpu, c_hat);
-    //
-    // // Compute ĉ³ - ĉ
-    // cube<<<Nblocks, Nthreads>>>(c_gpu, c_cube);
-    // cufftExecD2Z(rfft, c_cube, f_hat);
-    //
-    // // Compute c_{i+1}
-    // second_order<<<grid, threads>>>(c_hat, c_hat_prev, f_hat, f_hat_prev, dt, hh);
-    // cufftExecZ2D(irfft, c_hat, c_gpu);
-    //
-    // // Save variables for next iteration
-    // tmp = c_hat_prev;
-    // c_hat_prev = c_hat;
-    // c_hat = tmp;
-    // tmp = f_hat_prev;
-    // f_hat_prev = f_hat;
-    // f_hat = tmp;
+    cufftExecD2Z(rfft, c_gpu, c_hat);
+
+    // Compute ĉ³ - ĉ
+    cube<<<Nblocks, Nthreads>>>(c_gpu, c_cube);
+    cufftExecD2Z(rfft, c_cube, f_hat);
+
+    // Compute c_{i+1}
+    second_order<<<grid, threads>>>(c_hat, c_hat_prev, f_hat, f_hat_prev, dt, hh, tmp);
+    cufftExecZ2D(irfft, tmp, c_gpu);
+
+    // Save variables for next iteration
+    cudaMemcpy(c_hat_prev, c_hat, cplx_size, cudaMemcpyDeviceToDevice);
+    cudaMemcpy(f_hat_prev, f_hat, cplx_size, cudaMemcpyDeviceToDevice);
 }
 
 /*
@@ -79,6 +75,7 @@ void init_solver(double *c) {
     // Semi-implicit scheme
     cudaMalloc((void **) &c_gpu,      real_size);
     cudaMalloc((void **) &c_cube,     real_size);
+    cudaMalloc((void **) &tmp,        cplx_size);
     cudaMalloc((void **) &c_hat,      cplx_size);
     cudaMalloc((void **) &c_hat_prev, cplx_size);
     cudaMalloc((void **) &f_hat,      cplx_size);
@@ -122,7 +119,7 @@ __global__ void cube(double* c, double* cube) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     cube[i] = c[i]*c[i]*c[i] - c[i];
 }
-__global__ void first_order(cufftDoubleComplex *c_hat, cufftDoubleComplex* f_hat, double dt, double hh) {
+__global__ void first_order(cufftDoubleComplex *c_hat, cufftDoubleComplex* f_hat, double dt, double hh, cufftDoubleComplex *out) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     int j = blockIdx.y * blockDim.y + threadIdx.y;
 
@@ -132,10 +129,10 @@ __global__ void first_order(cufftDoubleComplex *c_hat, cufftDoubleComplex* f_hat
 
     // Compute \hat{F}
     int ind = i*(N_DISCR/2+1)+j;
-    c_hat[ind].x = hh * (c_hat[ind].x - dt*k*f_hat[ind].x) / (1.0 + dt*1e-4*k*k);
-    c_hat[ind].y = hh * (c_hat[ind].y - dt*k*f_hat[ind].y) / (1.0 + dt*1e-4*k*k);
+    out[ind].x = hh * (c_hat[ind].x - dt*k*f_hat[ind].x) / (1.0 + dt*1e-4*k*k);
+    out[ind].y = hh * (c_hat[ind].y - dt*k*f_hat[ind].y) / (1.0 + dt*1e-4*k*k);
 }
-__global__ void second_order(cufftDoubleComplex *c_hat, cufftDoubleComplex* c_hat_prev, cufftDoubleComplex* f_hat, cufftDoubleComplex* f_hat_prev, double dt, double hh) {
+__global__ void second_order(cufftDoubleComplex *c_hat, cufftDoubleComplex* c_hat_prev, cufftDoubleComplex* f_hat, cufftDoubleComplex* f_hat_prev, double dt, double hh, cufftDoubleComplex *out) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     int j = blockIdx.y * blockDim.y + threadIdx.y;
 
@@ -145,6 +142,6 @@ __global__ void second_order(cufftDoubleComplex *c_hat, cufftDoubleComplex* c_ha
 
     // Compute \hat{F}
     int ind = i*(N_DISCR/2+1)+j;
-    c_hat[ind].x = hh * (4.0*c_hat[ind].x - c_hat_prev[ind].x - 2.0*dt*k * (2.0*f_hat[ind].x - f_hat_prev[ind].x)) / (3.0 + 2.0*dt*1e-4*k*k);
-    c_hat[ind].y = hh * (4.0*c_hat[ind].y - c_hat_prev[ind].y - 2.0*dt*k * (2.0*f_hat[ind].y - f_hat_prev[ind].y)) / (3.0 + 2.0*dt*1e-4*k*k);
+    out[ind].x = hh*(4.0*c_hat[ind].x - c_hat_prev[ind].x - 2.0*dt*k*(2.0*f_hat[ind].x - f_hat_prev[ind].x)) / (3.0 + 2e-4*dt*k*k);
+    out[ind].y = hh*(4.0*c_hat[ind].y - c_hat_prev[ind].y - 2.0*dt*k*(2.0*f_hat[ind].y - f_hat_prev[ind].y)) / (3.0 + 2e-4*dt*k*k);
 }
