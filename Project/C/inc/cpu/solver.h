@@ -7,25 +7,9 @@
 #include <fftw3.h>
 
 
-#define REAL 0
-#define CPLX 1
-
-void RungeKutta4(double* c, double dt);
-void f(double* c, double* dc);
-
+void step(double *c, double dt);
 void init_solver(double *c);
 void free_solver();
-
-// Temp variables for RungeKutta4 function
-double* k1;
-double* k2;
-double* k3;
-double* k4;
-double* tmp;
-
-// Temp variables for f function
-fftw_complex *c_hat;
-double       *k;
 
 // FFTW plans for real-valued forward & backard 2-D DFT
 fftw_complex *cval;

@@ -2,6 +2,8 @@
 
 #define REAL 0
 #define CPLX 1
+#define FOUR_PI_SQUARED 39.478417604357432
+
 
 double hh = 1.0 / (N_DISCR*N_DISCR);
 int nRealElem = N_DISCR*N_DISCR;
@@ -9,83 +11,90 @@ int nCplxElem = N_DISCR*(N_DISCR/2+1);
 
 
 /*
- *  Compute one iteration of Runge Kutta 4
+ *  Compute one iteration using BDF2 & AB2
  *  Return value is done in-place.
  */
-void RungeKutta4(double* c, double dt){
-    // K1
-    f(c, k1);
+int iter = 1;
+void *tmp;
+double *k;
+fftw_complex *buffer;
+fftw_complex *f_hat;
+fftw_complex *f_hat_prev;
+fftw_complex *c_hat;
+fftw_complex *c_hat_prev;
+void step(double *c, double dt) {
+    // Initialise solver; perform first iteration
+    if (iter == 1) {
+        // Compute ĉ
+        memcpy(rval, c, nRealElem*sizeof(double));
+        fftw_execute(rfft2);
+        memcpy(c_hat_prev, cval, nCplxElem*sizeof(fftw_complex));
 
-    // K2
-    for(int i = 0; i < nRealElem; i++) {
-        tmp[i] = c[i] + dt*k1[i]/2.0;
-    }
-    f(tmp, k2);
+        // Compute ĉ³ - c
+        for(int i = 0; i < nRealElem; i++) {
+            rval[i] = c[i]*c[i]*c[i] - c[i];
+        }
+        fftw_execute(rfft2);
+        memcpy(f_hat_prev, cval, nCplxElem*sizeof(fftw_complex));
 
-    // K3
-    for(int i = 0; i < nRealElem; i++) {
-        tmp[i] = c[i] + dt*k2[i]/2.0;
-    }
-    f(tmp, k3);
+        // Compute c_1
+        for(int i = 0; i < nCplxElem; i++) {
+            cval[i][REAL] = hh * (c_hat_prev[i][REAL] - dt*k[i]*f_hat_prev[i][REAL]) / (1.0 + dt*1e-4*k[i]*k[i]);
+            cval[i][CPLX] = hh * (c_hat_prev[i][CPLX] - dt*k[i]*f_hat_prev[i][CPLX]) / (1.0 + dt*1e-4*k[i]*k[i]);
+        }
+        fftw_execute(irfft2);
+        memcpy(c, rval, nRealElem*sizeof(double));
 
-    // K4
-    for(int i = 0; i < nRealElem; i++) {
-        tmp[i] = c[i] + dt*k3[i];
-    }
-    f(tmp, k4);
+    } else {
+        // Compute ĉ
+        memcpy(rval, c, nRealElem*sizeof(double));
+        fftw_execute(rfft2);
+        memcpy(c_hat, cval, nCplxElem*sizeof(fftw_complex));
 
-    // C_i+1
-    for(int i = 0; i < nRealElem; i++) {
-        c[i] += dt*(k1[i] + 2*k2[i] + 2*k3[i] + k4[i])/6.0;
-    }
-}
+        // Compute ĉ³ - ĉ
+        for(int i = 0; i < nRealElem; i++) {
+            rval[i] = c[i]*c[i]*c[i] - c[i];
+        }
+        fftw_execute(rfft2);
+        memcpy(f_hat, cval, nCplxElem*sizeof(fftw_complex));
 
-/*
- *  Compute the time derivative of c
- *  Return value is not in-place.
- */
-void f(double* c, double* dc) {
-    // Compute ĉ
-    memcpy(rval, c, nRealElem*sizeof(double));
-    fftw_execute(rfft2);
-    memcpy(c_hat, cval, nCplxElem*sizeof(fftw_complex));
+        // Compute c_{i+1}
+        for(int i = 0; i < nCplxElem; i++) {
+            cval[i][REAL] = hh * (4.0*c_hat[i][REAL] - c_hat_prev[i][REAL] - 2.0*dt*k[i] * (2.0*f_hat[i][REAL] - f_hat_prev[i][REAL])) / (3.0 + 2e-4*dt*k[i]*k[i]);
+            cval[i][CPLX] = hh * (4.0*c_hat[i][CPLX] - c_hat_prev[i][CPLX] - 2.0*dt*k[i] * (2.0*f_hat[i][CPLX] - f_hat_prev[i][CPLX])) / (3.0 + 2e-4*dt*k[i]*k[i]);
+        }
+        fftw_execute(irfft2);
+        memcpy(c, rval, nRealElem*sizeof(double));
 
-    // Compute ĉ³
-    for(int i = 0; i < nRealElem; i++) {
-        rval[i] = c[i]*c[i]*c[i];
+        // Save variables for next iteration
+        tmp = c_hat_prev;
+        c_hat_prev = c_hat;
+        c_hat = tmp;
+        tmp = f_hat_prev;
+        f_hat_prev = f_hat;
+        f_hat = tmp;
     }
-    fftw_execute(rfft2);
 
-    // Compute F
-    for(int i = 0; i < nCplxElem; i++) {
-        cval[i][REAL] = k[i] * (cval[i][REAL] - c_hat[i][REAL] - 1e-4*k[i]*c_hat[i][REAL]);
-        cval[i][CPLX] = k[i] * (cval[i][CPLX] - c_hat[i][CPLX] - 1e-4*k[i]*c_hat[i][CPLX]);
-    }
-    fftw_execute(irfft2);
-    for (int i = 0; i < nRealElem; i++) {
-        dc[i] = hh*rval[i];
-    }
+    iter++;
 }
 
 /*
  *  Initialise the various stuff
  */
 void init_solver(double *c) {
-    // RK4
-    k1    = (double*) malloc(nRealElem*sizeof(double));
-    k2    = (double*) malloc(nRealElem*sizeof(double));
-    k3    = (double*) malloc(nRealElem*sizeof(double));
-    k4    = (double*) malloc(nRealElem*sizeof(double));
-    tmp   = (double*) malloc(nRealElem*sizeof(double));
+    // Semi-implicit scheme
+    buffer = fftw_alloc_complex(4*nCplxElem);
+    c_hat      = &buffer[0];
+    c_hat_prev = &buffer[  nCplxElem];
+    f_hat      = &buffer[2*nCplxElem];
+    f_hat_prev = &buffer[3*nCplxElem];
 
-    // F
-    c_hat = fftw_alloc_complex(nCplxElem);
+    // Wavenumber k
     k = (double*) malloc(nCplxElem*sizeof(double));
-    double factor = -4*M_PI*M_PI;
     for (int i = 0; i < N_DISCR; i++) {
         for (int j = 0; j < N_DISCR/2+1; j++) {
             int l = (i < N_DISCR/2) ? i : i-N_DISCR;
-            k[i*(N_DISCR/2+1)+j] = factor*(j*j + l*l);
+            k[i*(N_DISCR/2+1)+j] = FOUR_PI_SQUARED * (j*j + l*l);
         }
     }
 
@@ -100,16 +109,9 @@ void init_solver(double *c) {
  *  Free the various allocated arrays
  */
 void free_solver() {
-    // RK4
-    free(k1);
-    free(k2);
-    free(k3);
-    free(k4);
-    free(tmp);
-
-    // F
+    // Semi-implicit scheme
+    fftw_free(buffer);
     free(k);
-    fftw_free(c_hat);
 
     // FFTW
     fftw_free(cval);
