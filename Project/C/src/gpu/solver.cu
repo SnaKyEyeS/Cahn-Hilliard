@@ -5,6 +5,8 @@ extern "C" {
 
 #define REAL 0
 #define CPLX 1
+#define FOUR_PI_SQUARED 39.478417604357432
+
 
 size_t real_size = N_DISCR*N_DISCR*sizeof(double);
 size_t cplx_size = N_DISCR*(1+N_DISCR/2)*sizeof(complex);
@@ -132,7 +134,7 @@ __global__ void first_order(complex *c_hat, complex* f_hat, double dt, double hh
 
     // Wavenumber
     double l = (i < N_DISCR/2) ? i : i-N_DISCR;
-    double k = 4.0*M_PI*M_PI * (j*j + l*l);
+    double k = FOUR_PI_SQUARED * (j*j + l*l);
 
     // Compute \hat{F}
     int ind = i*(N_DISCR/2+1)+j;
@@ -145,7 +147,7 @@ __global__ void second_order(complex *c_hat, complex* c_hat_prev, complex* f_hat
 
     // Wavenumber
     double l = (i < N_DISCR/2) ? i : i-N_DISCR;
-    double k = 4.0*M_PI*M_PI * (j*j + l*l);
+    double k = FOUR_PI_SQUARED * (j*j + l*l);
 
     // Compute \hat{F}
     int ind = i*(N_DISCR/2+1)+j;

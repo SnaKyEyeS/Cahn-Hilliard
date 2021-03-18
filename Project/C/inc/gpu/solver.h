@@ -5,7 +5,7 @@
 #include <cufft.h>
 
 
-typedef complex cufftDoubleComplex;
+typedef cufftDoubleComplex complex;
 
 cufftHandle rfft;
 cufftHandle irfft;

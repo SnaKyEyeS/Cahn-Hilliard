@@ -2,6 +2,8 @@
 
 #define REAL 0
 #define CPLX 1
+#define FOUR_PI_SQUARED 39.478417604357432
+
 
 double hh = 1.0 / (N_DISCR*N_DISCR);
 int nRealElem = N_DISCR*N_DISCR;
@@ -58,8 +60,8 @@ void step(double *c, double dt) {
 
         // Compute c_{i+1}
         for(int i = 0; i < nCplxElem; i++) {
-            cval[i][REAL] = hh * (4.0*c_hat[i][REAL] - c_hat_prev[i][REAL] - 2.0*dt*k[i] * (2.0*f_hat[i][REAL] - f_hat_prev[i][REAL])) / (3 + 2.0*dt*1e-4*k[i]*k[i]);
-            cval[i][CPLX] = hh * (4.0*c_hat[i][CPLX] - c_hat_prev[i][CPLX] - 2.0*dt*k[i] * (2.0*f_hat[i][CPLX] - f_hat_prev[i][CPLX])) / (3.0 + 2.0*dt*1e-4*k[i]*k[i]);
+            cval[i][REAL] = hh * (4.0*c_hat[i][REAL] - c_hat_prev[i][REAL] - 2.0*dt*k[i] * (2.0*f_hat[i][REAL] - f_hat_prev[i][REAL])) / (3.0 + 2e-4*dt*k[i]*k[i]);
+            cval[i][CPLX] = hh * (4.0*c_hat[i][CPLX] - c_hat_prev[i][CPLX] - 2.0*dt*k[i] * (2.0*f_hat[i][CPLX] - f_hat_prev[i][CPLX])) / (3.0 + 2e-4*dt*k[i]*k[i]);
         }
         fftw_execute(irfft2);
         memcpy(c, rval, nRealElem*sizeof(double));
@@ -89,11 +91,10 @@ void init_solver(double *c) {
 
     // Wavenumber k
     k = (double*) malloc(nCplxElem*sizeof(double));
-    double factor = 4*M_PI*M_PI;
     for (int i = 0; i < N_DISCR; i++) {
         for (int j = 0; j < N_DISCR/2+1; j++) {
             int l = (i < N_DISCR/2) ? i : i-N_DISCR;
-            k[i*(N_DISCR/2+1)+j] = factor*(j*j + l*l);
+            k[i*(N_DISCR/2+1)+j] = FOUR_PI_SQUARED * (j*j + l*l);
         }
     }
 
