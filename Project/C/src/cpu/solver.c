@@ -43,36 +43,37 @@ void step(double *c, double dt) {
         fftw_execute(irfft2);
         memcpy(c, rval, nRealElem*sizeof(double));
 
-        iter++;
+    } else {
+        // Compute ĉ
+        memcpy(rval, c, nRealElem*sizeof(double));
+        fftw_execute(rfft2);
+        memcpy(c_hat, cval, nCplxElem*sizeof(fftw_complex));
+
+        // Compute ĉ³ - ĉ
+        for(int i = 0; i < nRealElem; i++) {
+            rval[i] = c[i]*c[i]*c[i] - c[i];
+        }
+        fftw_execute(rfft2);
+        memcpy(f_hat, cval, nCplxElem*sizeof(fftw_complex));
+
+        // Compute c_{i+1}
+        for(int i = 0; i < nCplxElem; i++) {
+            cval[i][REAL] = hh * (4.0*c_hat[i][REAL] - c_hat_prev[i][REAL] - 2.0*dt*k[i] * (2.0*f_hat[i][REAL] - f_hat_prev[i][REAL])) / (3 + 2.0*dt*1e-4*k[i]*k[i]);
+            cval[i][CPLX] = hh * (4.0*c_hat[i][CPLX] - c_hat_prev[i][CPLX] - 2.0*dt*k[i] * (2.0*f_hat[i][CPLX] - f_hat_prev[i][CPLX])) / (3.0 + 2.0*dt*1e-4*k[i]*k[i]);
+        }
+        fftw_execute(irfft2);
+        memcpy(c, rval, nRealElem*sizeof(double));
+
+        // Save variables for next iteration
+        tmp = c_hat_prev;
+        c_hat_prev = c_hat;
+        c_hat = tmp;
+        tmp = f_hat_prev;
+        f_hat_prev = f_hat;
+        f_hat = tmp;
     }
 
-    // Compute ĉ
-    memcpy(rval, c, nRealElem*sizeof(double));
-    fftw_execute(rfft2);
-    memcpy(c_hat, cval, nCplxElem*sizeof(fftw_complex));
-
-    // Compute ĉ³ - ĉ
-    for(int i = 0; i < nRealElem; i++) {
-        rval[i] = c[i]*c[i]*c[i] - c[i];
-    }
-    fftw_execute(rfft2);
-    memcpy(f_hat, cval, nCplxElem*sizeof(fftw_complex));
-
-    // Compute c_{i+1}
-    for(int i = 0; i < nCplxElem; i++) {
-        cval[i][REAL] = hh * (4.0*c_hat[i][REAL] - c_hat_prev[i][REAL] - 2.0*dt*k[i] * (2.0*f_hat[i][REAL] - f_hat_prev[i][REAL])) / (3 + 2.0*dt*1e-4*k[i]*k[i]);
-        cval[i][CPLX] = hh * (4.0*c_hat[i][CPLX] - c_hat_prev[i][CPLX] - 2.0*dt*k[i] * (2.0*f_hat[i][CPLX] - f_hat_prev[i][CPLX])) / (3.0 + 2.0*dt*1e-4*k[i]*k[i]);
-    }
-    fftw_execute(irfft2);
-    memcpy(c, rval, nRealElem*sizeof(double));
-
-    // Save variables for next iteration
-    tmp = c_hat_prev;
-    c_hat_prev = c_hat;
-    c_hat = tmp;
-    tmp = f_hat_prev;
-    f_hat_prev = f_hat;
-    f_hat = tmp;
+    iter++;
 }
 
 /*

@@ -43,27 +43,28 @@ void step(double* c, double dt) {
         first_order<<<grid, threads>>>(c_hat_prev, f_hat_prev, dt, hh, out);
         cufftExecZ2D(irfft, out, c_gpu);
 
-        iter++;
+    } else {
+        // Compute ĉ
+        cufftExecD2Z(rfft, c_gpu, c_hat);
+
+        // Compute ĉ³ - ĉ
+        cube<<<Nblocks, Nthreads>>>(c_gpu, c_cube);
+        cufftExecD2Z(rfft, c_cube, f_hat);
+
+        // Compute c_{i+1}
+        second_order<<<grid, threads>>>(c_hat, c_hat_prev, f_hat, f_hat_prev, dt, hh, out);
+        cufftExecZ2D(irfft, out, c_gpu);
+
+        // Save variables for next iteration
+        tmp = c_hat_prev;
+        c_hat_prev = c_hat;
+        c_hat = tmp;
+        tmp = f_hat_prev;
+        f_hat_prev = f_hat;
+        f_hat = tmp;
     }
 
-    // Compute ĉ
-    cufftExecD2Z(rfft, c_gpu, c_hat);
-
-    // Compute ĉ³ - ĉ
-    cube<<<Nblocks, Nthreads>>>(c_gpu, c_cube);
-    cufftExecD2Z(rfft, c_cube, f_hat);
-
-    // Compute c_{i+1}
-    second_order<<<grid, threads>>>(c_hat, c_hat_prev, f_hat, f_hat_prev, dt, hh, out);
-    cufftExecZ2D(irfft, out, c_gpu);
-
-    // Save variables for next iteration
-    tmp = c_hat_prev;
-    c_hat_prev = c_hat;
-    c_hat = tmp;
-    tmp = f_hat_prev;
-    f_hat_prev = f_hat;
-    f_hat = tmp;
+    iter++;
 }
 
 /*
