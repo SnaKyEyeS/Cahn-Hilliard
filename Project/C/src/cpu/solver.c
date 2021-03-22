@@ -18,62 +18,47 @@ int iter = 1;
 void *tmp;
 double *k;
 fftw_complex *buffer;
-fftw_complex *f_hat;
-fftw_complex *f_hat_prev;
-fftw_complex *c_hat;
-fftw_complex *c_hat_prev;
+fftw_complex *f_hat, *f_hat_1;
+fftw_complex *c_hat, *c_hat_1;
+
 void step(double *c, double dt) {
-    // Initialise solver; perform first iteration
-    if (iter == 1) {
-        // Compute ĉ
-        memcpy(rval, c, nRealElem*sizeof(double));
-        fftw_execute(rfft2);
-        memcpy(c_hat_prev, cval, nCplxElem*sizeof(fftw_complex));
+    // Compute ĉ
+    memcpy(rval, c, nRealElem*sizeof(double));
+    fftw_execute(rfft2);
+    memcpy(c_hat, cval, nCplxElem*sizeof(fftw_complex));
 
-        // Compute ĉ³ - c
-        for(int i = 0; i < nRealElem; i++) {
-            rval[i] = c[i]*c[i]*c[i] - c[i];
-        }
-        fftw_execute(rfft2);
-        memcpy(f_hat_prev, cval, nCplxElem*sizeof(fftw_complex));
-
-        // Compute c_1
-        for(int i = 0; i < nCplxElem; i++) {
-            cval[i][REAL] = hh * (c_hat_prev[i][REAL] - dt*k[i]*f_hat_prev[i][REAL]) / (1.0 + dt*1e-4*k[i]*k[i]);
-            cval[i][CPLX] = hh * (c_hat_prev[i][CPLX] - dt*k[i]*f_hat_prev[i][CPLX]) / (1.0 + dt*1e-4*k[i]*k[i]);
-        }
-        fftw_execute(irfft2);
-        memcpy(c, rval, nRealElem*sizeof(double));
-
-    } else {
-        // Compute ĉ
-        memcpy(rval, c, nRealElem*sizeof(double));
-        fftw_execute(rfft2);
-        memcpy(c_hat, cval, nCplxElem*sizeof(fftw_complex));
-
-        // Compute ĉ³ - ĉ
-        for(int i = 0; i < nRealElem; i++) {
-            rval[i] = c[i]*c[i]*c[i] - c[i];
-        }
-        fftw_execute(rfft2);
-        memcpy(f_hat, cval, nCplxElem*sizeof(fftw_complex));
-
-        // Compute c_{i+1}
-        for(int i = 0; i < nCplxElem; i++) {
-            cval[i][REAL] = hh * (4.0*c_hat[i][REAL] - c_hat_prev[i][REAL] - 2.0*dt*k[i] * (2.0*f_hat[i][REAL] - f_hat_prev[i][REAL])) / (3.0 + 2e-4*dt*k[i]*k[i]);
-            cval[i][CPLX] = hh * (4.0*c_hat[i][CPLX] - c_hat_prev[i][CPLX] - 2.0*dt*k[i] * (2.0*f_hat[i][CPLX] - f_hat_prev[i][CPLX])) / (3.0 + 2e-4*dt*k[i]*k[i]);
-        }
-        fftw_execute(irfft2);
-        memcpy(c, rval, nRealElem*sizeof(double));
-
-        // Save variables for next iteration
-        tmp = c_hat_prev;
-        c_hat_prev = c_hat;
-        c_hat = tmp;
-        tmp = f_hat_prev;
-        f_hat_prev = f_hat;
-        f_hat = tmp;
+    // Compute ĉ³ - c
+    for(int i = 0; i < nRealElem; i++) {
+        rval[i] = c[i]*c[i]*c[i] - c[i];
     }
+    fftw_execute(rfft2);
+    memcpy(f_hat, cval, nCplxElem*sizeof(fftw_complex));
+
+    // Compute c_{i+1}
+    if (iter == 1) {    // IMEX-BDF1
+        for(int i = 0; i < nCplxElem; i++) {
+            cval[i][REAL] = hh * (c_hat[i][REAL] - dt*k[i]*f_hat[i][REAL]) / (1.0 + dt*1e-4*k[i]*k[i]);
+            cval[i][CPLX] = hh * (c_hat[i][CPLX] - dt*k[i]*f_hat[i][CPLX]) / (1.0 + dt*1e-4*k[i]*k[i]);
+        }
+        fftw_execute(irfft2);
+        memcpy(c, rval, nRealElem*sizeof(double));
+
+    } else {            // IMEX-BDF2
+        for(int i = 0; i < nCplxElem; i++) {
+            cval[i][REAL] = hh * (4.0*c_hat[i][REAL] - c_hat_1[i][REAL] - 2.0*dt*k[i] * (2.0*f_hat[i][REAL] - f_hat_1[i][REAL])) / (3.0 + 2e-4*dt*k[i]*k[i]);
+            cval[i][CPLX] = hh * (4.0*c_hat[i][CPLX] - c_hat_1[i][CPLX] - 2.0*dt*k[i] * (2.0*f_hat[i][CPLX] - f_hat_1[i][CPLX])) / (3.0 + 2e-4*dt*k[i]*k[i]);
+        }
+        fftw_execute(irfft2);
+        memcpy(c, rval, nRealElem*sizeof(double));
+    }
+
+    // Save variables for next iteration
+    tmp = c_hat_1;
+    c_hat_1 = c_hat;
+    c_hat = tmp;
+    tmp = f_hat_1;
+    f_hat_1 = f_hat;
+    f_hat = tmp;
 
     iter++;
 }
@@ -83,11 +68,11 @@ void step(double *c, double dt) {
  */
 void init_solver(double *c) {
     // Semi-implicit scheme
-    buffer = fftw_alloc_complex(4*nCplxElem);
-    c_hat      = &buffer[0];
-    c_hat_prev = &buffer[  nCplxElem];
-    f_hat      = &buffer[2*nCplxElem];
-    f_hat_prev = &buffer[3*nCplxElem];
+    buffer  = fftw_alloc_complex(4*nCplxElem);
+    c_hat   = &buffer[0];
+    c_hat_1 = &buffer[  nCplxElem];
+    f_hat   = &buffer[2*nCplxElem];
+    f_hat_1 = &buffer[3*nCplxElem];
 
     // Wavenumber k
     k = (double*) malloc(nCplxElem*sizeof(double));
