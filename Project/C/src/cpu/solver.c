@@ -34,28 +34,29 @@ void step(double *c, double dt) {
     fftw_execute(rfft2);
     memcpy(f_hat, cval, nCplxElem*sizeof(fftw_complex));
 
-    // Compute c_{i+1}
+    // Compute ĉ_{i+1}
     if (iter == 1) {    // IMEX-BDF1
         for(int i = 0; i < nCplxElem; i++) {
             cval[i][REAL] = hh * (c_hat[i][REAL] - dt*k[i]*f_hat[i][REAL]) / (1.0 + dt*1e-4*k[i]*k[i]);
             cval[i][CPLX] = hh * (c_hat[i][CPLX] - dt*k[i]*f_hat[i][CPLX]) / (1.0 + dt*1e-4*k[i]*k[i]);
         }
-        fftw_execute(irfft2);
-        memcpy(c, rval, nRealElem*sizeof(double));
 
     } else {            // IMEX-BDF2
         for(int i = 0; i < nCplxElem; i++) {
             cval[i][REAL] = hh * (4.0*c_hat[i][REAL] - c_hat_1[i][REAL] - 2.0*dt*k[i] * (2.0*f_hat[i][REAL] - f_hat_1[i][REAL])) / (3.0 + 2e-4*dt*k[i]*k[i]);
             cval[i][CPLX] = hh * (4.0*c_hat[i][CPLX] - c_hat_1[i][CPLX] - 2.0*dt*k[i] * (2.0*f_hat[i][CPLX] - f_hat_1[i][CPLX])) / (3.0 + 2e-4*dt*k[i]*k[i]);
         }
-        fftw_execute(irfft2);
-        memcpy(c, rval, nRealElem*sizeof(double));
     }
+
+    // Back to physical domain
+    fftw_execute(irfft2);
+    memcpy(c, rval, nRealElem*sizeof(double));
 
     // Save variables for next iteration
     tmp = c_hat_1;
     c_hat_1 = c_hat;
     c_hat = tmp;
+
     tmp = f_hat_1;
     f_hat_1 = f_hat;
     f_hat = tmp;
