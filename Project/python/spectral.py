@@ -19,7 +19,7 @@ def update(i):
     return img, title,
 
 
-def integrate(c):
+def integrate(c, dt):
     """
     Time-stepping/integration scheme using a semi-implicit scheme combining
     the Backward-Differentiation Formulae & Adams-Bashforth
@@ -43,7 +43,7 @@ def integrate(c):
         yield c
 
 
-def rk4(c):
+def rk4(c, dt):
     """
     Time stepping/integration scheme using the classical 4th order Runge-Kutta
     """
@@ -68,7 +68,7 @@ skip_frame = 10
 # Initialise vectors
 x, h = np.linspace(0, 1, n, endpoint=False, retstep=True)
 c = rfft2(2*np.random.rand(n, n) - 1)   # We work in frequency domain
-sol = integrate(c)
+sol = integrate(c, dt)
 
 # Initialize wavelength for second derivative to avoid a repetitive operation
 # Since we use rfftn, one dim is n/2+1 (rfftfreq) and the other is n (fftfreq)
@@ -76,16 +76,17 @@ k_x, k_y = np.meshgrid(rfftfreq(n, h/(2*np.pi)), fftfreq(n, h/(2*np.pi)))
 k = k_x**2 + k_y**2
 
 # Initialize animation
-fig, ax = plt.subplots()
-img = ax.imshow(irfft2(c), cmap="jet", vmin=-1, vmax=1)
-fig.colorbar(img, ax=ax)
-ax.axis("off")
-title = ax.text(.5, .1, "", bbox={'facecolor': 'w', 'alpha': 0.7, 'pad': 5}, transform=ax.transAxes, ha="center")
+if __name__ == "__main__":
+    fig, ax = plt.subplots()
+    img = ax.imshow(irfft2(c), cmap="jet", vmin=-1, vmax=1)
+    fig.colorbar(img, ax=ax)
+    ax.axis("off")
+    title = ax.text(.5, .1, "", bbox={'facecolor': 'w', 'alpha': 0.7, 'pad': 5}, transform=ax.transAxes, ha="center")
 
-# Start animation
-anim = FuncAnimation(fig, update, frames=int(n_step/skip_frame), interval=1, blit=True)
-if False:
-    pbar = tqdm(total=int(n_step/skip_frame))
-    anim.save("cahn_hilliard_spectral.mp4", fps=500, progress_callback=lambda i, n: pbar.update(1))
-else:
-    plt.show()
+    # Start animation
+    anim = FuncAnimation(fig, update, frames=int(n_step/skip_frame), interval=1, blit=True)
+    if False:
+        pbar = tqdm(total=int(n_step/skip_frame))
+        anim.save("cahn_hilliard_spectral.mp4", fps=500, progress_callback=lambda i, n: pbar.update(1))
+    else:
+        plt.show()

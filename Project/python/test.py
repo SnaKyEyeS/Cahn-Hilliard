@@ -1,27 +1,29 @@
+import sys
 import numpy as np
-import matplotlib.pyplot as plt
+import scipy.io as io
 
-from scipy.fft import rfft2, irfft2, rfftfreq, fftfreq
+from copy import copy
+from spectral import integrate, irfft2, rfft2, n
 
 
-n = 1000
-discr, h = np.linspace(0, 2*np.pi, n, retstep=True, endpoint=False)
-x, y = np.meshgrid(discr, discr)
+dts = np.array([1e-6, 1e-7])
+error = list()
+np.random.seed(seed=1)
+c = rfft2(2*np.random.rand(n, n) - 1)
+ref = irfft2(io.loadmat("sol_ref.mat")["c"])
 
-# Wave number
-k_x, k_y = np.meshgrid(rfftfreq(n, h/(2*np.pi)), fftfreq(n, h/(2*np.pi)))
-k = -(k_x**2 + k_y**2)
+for dt in dts:
+    # Time scheme - imex & rk4 as ref
+    imex = integrate(copy(c), dt)
+    iter = 0
 
-# Differentiate
-f = np.cos(x)*np.sin(y)
+    # Iterate to t = 0.001
+    print(f"\rStarting iterations for dt = {dt*1e3:.4f} [ms]...")
+    while not dt*iter == .001:
+        sol = next(imex)
 
-df = irfft2(k*rfft2(f**3 - f - irfft2(k*rfft2(f))))
+        sys.stdout.write(f"\rt = {dt*iter:.6f} [s]")
+        iter += 1
+    error.append(irfft2(sol))
 
-# df = irfft2(k*rfft2(f))
-# df_exact = -2*np.cos(x)*np.sin(y)
-
-# Plot
-fig = plt.figure()
-ax = fig.add_subplot(111, projection='3d')
-ax.plot_surface(x, y, df, cmap="coolwarm")
-plt.show()
+print(f"\rn_est = {np.log10(np.sqrt(np.sum((error[0] - ref)**2, axis=(0, 1))) / np.sqrt(np.sum((error[1] - ref)**2, axis=(0, 1))))}")
