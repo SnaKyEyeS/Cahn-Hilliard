@@ -13,7 +13,7 @@ c_init = rfft2(np.loadtxt("c_128_init.txt").reshape(n, n))
 c_ref = np.loadtxt("c_128_ref.txt").reshape(n, n)
 
 # Initialise stuff
-dts = [1e-6/16, 1e-6/32]
+dts = [1e-6/4, 1e-6/8]
 error = list()
 
 for dt in dts:
