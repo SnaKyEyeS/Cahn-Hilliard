@@ -2,7 +2,9 @@ import sys
 import numpy as np
 
 from copy import copy
-from spectral import imex, irfft2, rfft2, n
+from scipy.linalg import norm
+from spectral import irfft2, rfft2, n
+from spectral import etdrk4 as integrate
 
 
 # Load initial & reference solutions
@@ -16,7 +18,7 @@ error = list()
 
 for dt in dts:
     # Time scheme - imex & rk4 as ref
-    step = imex(copy(c_init), dt)
+    step = integrate(copy(c_init), dt)
     iter = 0
 
     # Iterate to t = 0.001
@@ -26,6 +28,8 @@ for dt in dts:
 
         sys.stdout.write(f"\rt = {dt*iter:.6f} [s]")
         iter += 1
-    error.append(np.sqrt(np.sum((irfft2(c) - c_ref)**2)))
+    error.append(norm(irfft2(c) - c_ref))
 
-print(f"\rn_est = {np.log(error[0] / error[1]) / np.log(dts[0]/dts[1])}")
+print(f"\rError 1 = {error[0]}")
+print(f"\rError 2 = {error[1]}")
+print(f"n_est = {np.log(error[0] / error[1]) / np.log(dts[0]/dts[1])}")

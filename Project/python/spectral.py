@@ -19,7 +19,47 @@ def update(i):
     return img, title,
 
 
-def integrate(c, dt):
+def etdrk4(u, dt):
+    """
+    Time-stepping/integration scheme using the ETDRK4 scheme
+    """
+    # Non-linear term
+    N = lambda u: k * (u - rfft2(irfft2(u)**3))
+
+    # Linear term
+    L = -(1e-2*k)**2
+
+    # Pre-computations
+    E = np.exp(L*dt)
+    E2 = np.exp(L*dt/2.0)
+
+    m = 32
+    Q = np.zeros((n, int(n/2+1)))
+    f1 = np.zeros((n, int(n/2+1)))
+    f2 = np.zeros((n, int(n/2+1)))
+    f3 = np.zeros((n, int(n/2+1)))
+
+    for i in range(n):
+        for j in range(int(n/2+1)):
+            r = dt*L[i, j] + np.exp(1j*np.pi * (np.arange(m)+.5)/m)
+            Q[i, j] = dt*np.mean(((np.exp(r/2) - 1) / r)).real
+            f1[i, j] = dt*np.mean(((-4 - r + np.exp(r)*(4 - 3*r + r**2)) / r**3)).real
+            f2[i, j] = dt*np.mean(((2 + r + np.exp(r)*(-2 + r)) / r**3)).real
+            f3[i, j] = dt*np.mean(((-4 - 3*r - r**2 + np.exp(r)*(4 - r)) / r**3)).real
+
+    while True:
+        Nu = N(u)
+        a = E2*u + Q*Nu
+        Na = N(a)
+        b = E2*u + Q*Na
+        Nb = N(b)
+        c = E2*a + Q*(2*Nb - Nu)
+        Nc = N(c)
+        u = E*u + f1*Nu + 2*f2*(Na + Nb) + f3*Nc
+        yield u
+
+
+def imex(c, dt):
     """
     Time-stepping/integration scheme using a semi-implicit scheme combining
     the Backward-Differentiation Formulae & Adams-Bashforth
@@ -68,7 +108,7 @@ skip_frame = 10
 # Initialise vectors
 x, h = np.linspace(0, 1, n, endpoint=False, retstep=True)
 c = rfft2(2*np.random.rand(n, n) - 1)   # We work in frequency domain
-sol = integrate(c, dt)
+sol = etdrk4(c, dt)
 
 # Initialize wavelength for second derivative to avoid a repetitive operation
 # Since we use rfftn, one dim is n/2+1 (rfftfreq) and the other is n (fftfreq)
