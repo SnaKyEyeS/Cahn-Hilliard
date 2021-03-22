@@ -1,20 +1,22 @@
 import sys
 import numpy as np
-import scipy.io as io
 
 from copy import copy
 from spectral import integrate, irfft2, rfft2, n
 
 
-dts = np.array([1e-6, 1e-7])
+# Load initial & reference solutions
+# Reference solution is taken at t = 1e-3 w/ RK4 using dt = 1e-9
+c_init = rfft2(np.loadtxt("c_128_init.txt").reshape(n, n))
+c_ref = np.loadtxt("c_128_ref.txt").reshape(n, n)
+
+# Initialise stuff
+dts = [1e-6/4, 1e-6/8]
 error = list()
-np.random.seed(seed=1)
-c = rfft2(2*np.random.rand(n, n) - 1)
-ref = irfft2(io.loadmat("sol_ref.mat")["c"])
 
 for dt in dts:
     # Time scheme - imex & rk4 as ref
-    imex = integrate(copy(c), dt)
+    imex = integrate(copy(c_init), dt)
     iter = 0
 
     # Iterate to t = 0.001
@@ -24,6 +26,6 @@ for dt in dts:
 
         sys.stdout.write(f"\rt = {dt*iter:.6f} [s]")
         iter += 1
-    error.append(irfft2(sol))
+    error.append(np.sqrt(np.sum((irfft2(sol) - c_ref)**2)))
 
-print(f"\rn_est = {np.log10(np.sqrt(np.sum((error[0] - ref)**2, axis=(0, 1))) / np.sqrt(np.sum((error[1] - ref)**2, axis=(0, 1))))}")
+print(f"\rn_est = {np.log(error[0] / error[1]) / np.log(dts[0]/dts[1])}")
