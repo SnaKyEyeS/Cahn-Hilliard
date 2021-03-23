@@ -27,7 +27,7 @@ complex *tmp, *out;
 complex *c_hat, *c_hat_1;
 complex *f_hat, *f_hat_1;
 
-void step(double* c, double dt) {
+void step(double dt) {
     // Compute ĉ
     cufftExecD2Z(rfft, c_gpu, c_hat);
 
@@ -61,7 +61,22 @@ void step(double* c, double dt) {
 /*
  *  Initialise the various stuff
  */
-void init_solver(double *c) {
+void init_solver(double *c, double dt) {
+    switch(SOLVER) {
+        case RK4:
+            printf("Selected solver is RK4\n");
+            break;
+
+        case IMEX:
+            printf("Selected solver is IMEX\n");
+            break;
+
+        case ETDRK4:
+            printf("Selected solver is ETDRK4\n");
+            break;
+    }
+
+
     grid.x = N_DISCR/128;
     grid.y = 1 + N_DISCR/2;
     grid.z = 1;
@@ -106,7 +121,7 @@ void free_solver() {
 /*
  *  Copy solution from Device to Host
  */
-void cudaGetSolution(double *c) {
+void getSolution(double *c) {
     cudaMemcpy(c, c_gpu, real_size, cudaMemcpyDeviceToHost);
 }
 
