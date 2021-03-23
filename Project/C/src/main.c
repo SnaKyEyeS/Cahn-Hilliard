@@ -99,13 +99,22 @@ int main(int argc, char* argv[]) {
     clock_t begin, end;
     while (!glfwWindowShouldClose(window)) {
         // Timestepping
-        begin = clock();
+        // begin = clock();
         for (int i = 0; i < skip; i++) {
             step(dt);
             t++;
         }
         getSolution(c);
-        end = clock();
+        // end = clock();
+
+        // if (dt*t == 1e-3) {
+        //     FILE *fp = fopen("etdrk4_128_1e-6_8.txt", "w+");
+        //     for (int i = 0; i < N_DISCR*N_DISCR; i++)
+        //         fprintf(fp, "%.20e\n", c[i]);
+        //     fclose(fp);
+        //     printf("Output written to file\n");
+        //     exit(EXIT_SUCCESS);
+        // }
 
         // Event input
         glfwPollEvents();
@@ -134,8 +143,8 @@ int main(int argc, char* argv[]) {
         // end = clock();
 
         // Print stuff
-        printf("Time = %7.3f [ms]\n", (double)(end-begin)/CLOCKS_PER_SEC*1e3);
-        // printf("\rIter = %5d, Time = %.6f  ", t, t*dt);
+        // printf("Time = %7.3f [ms]\n", (double)(end-begin)/CLOCKS_PER_SEC*1e3);
+        printf("\rIter = %5d, Time = %.6f  ", t, t*dt);
         fflush(stdout);
     }
 
