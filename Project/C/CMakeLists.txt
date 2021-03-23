@@ -27,7 +27,7 @@ add_definitions(-DN_DISCR=${N_DISCR})
 
 option(SOLVER "Solver to use." OFF)
 if (NOT SOLVER)
-    set(SOLVER IMEX)
+    set(SOLVER ETDRK4)
 endif (NOT SOLVER)
 message(STATUS "Using the ${SOLVER} solver.")
 add_definitions(-DSOLVER=${SOLVER})
