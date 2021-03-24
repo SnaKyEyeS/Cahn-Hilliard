@@ -51,12 +51,12 @@ void imex(double dt) {
     // Compute ĉ_{i+1}
     if (iter == 1) {    // IMEX-BDF1
         for(int i = 0; i < nCplxElem; i++) {
-            c_hat[i] = (c_hat_0[i] + dt*k[i]*f_hat_0[i]) / (1.0 + dt*1e-4*k[i]*k[i]);
+            c_hat[i] = (c_hat_0[i] + dt*f_hat_0[i]) / (1.0 + dt*1e-4*k[i]*k[i]);
         }
 
     } else {            // IMEX-BDF2
         for(int i = 0; i < nCplxElem; i++) {
-            c_hat[i] = (4.0*c_hat_0[i] - c_hat_1[i] + 2.0*dt*k[i]*(2.0*f_hat_0[i] - f_hat_1[i])) / (3.0 + 2e-4*dt*k[i]*k[i]);
+            c_hat[i] = (4.0*c_hat_0[i] - c_hat_1[i] + 2.0*dt*(2.0*f_hat_0[i] - f_hat_1[i])) / (3.0 + 2e-4*dt*k[i]*k[i]);
         }
     }
 
@@ -105,7 +105,7 @@ void etdrk4(double dt) {
 
     // Compute u_{i+1}
     for (int i = 0; i < nCplxElem; i++) {
-        c_hat[i] = e1[i]*c_hat[i] + (f1[i]*Nu[i] + 2.0*f2[i]*(Na[i] + Nb[i]) + f3[i]*cval[i]);
+        c_hat[i] = e1[i]*c_hat[i] + f1[i]*Nu[i] + 2.0*f2[i]*(Na[i] + Nb[i]) + f3[i]*cval[i];
     }
 }
 
@@ -125,7 +125,7 @@ void non_linear_term(fftw_complex *c) {
     fftw_execute(rfft2);
 
     for(int i = 0; i < nCplxElem; i++) {
-        cval[i] = k[i]*cval[i];
+        cval[i] *= k[i];
     }
 }
 

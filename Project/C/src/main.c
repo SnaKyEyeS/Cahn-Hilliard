@@ -65,7 +65,7 @@ int main(int argc, char* argv[]) {
 
     // Simulation parameters
     int t = 0;
-    double dt = 1e-6/32.0;
+    double dt = 1e-6;
     double skip = 10;
 
     // Initialise Cahn-Hilliard solver
@@ -107,14 +107,14 @@ int main(int argc, char* argv[]) {
         getSolution(c);
         // end = clock();
 
-        if (dt*t == 1e-3) {
-            FILE *fp = fopen("etdrk4_128_1e-6_32.txt", "w+");
-            for (int i = 0; i < N_DISCR*N_DISCR; i++)
-                fprintf(fp, "%.20e\n", c[i]);
-            fclose(fp);
-            printf("Output written to file\n");
-            exit(EXIT_SUCCESS);
-        }
+        // if (dt*t == 1e-3) {
+        //     FILE *fp = fopen("etdrk4_128_1e-6_32.txt", "w+");
+        //     for (int i = 0; i < N_DISCR*N_DISCR; i++)
+        //         fprintf(fp, "%.20e\n", c[i]);
+        //     fclose(fp);
+        //     printf("Output written to file\n");
+        //     exit(EXIT_SUCCESS);
+        // }
 
         // Event input
         glfwPollEvents();
