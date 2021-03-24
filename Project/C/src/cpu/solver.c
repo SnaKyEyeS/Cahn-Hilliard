@@ -105,7 +105,7 @@ void etdrk4(double dt) {
 
     // Compute u_{i+1}
     for (int i = 0; i < nCplxElem; i++) {
-        c_hat[i] = e1[i]*c_hat[i] + k[i]*(f1[i]*Nu[i] + 2.0*f2[i]*(Na[i] + Nb[i]) + f3[i]*cval[i]);
+        c_hat[i] = e1[i]*c_hat[i] + (f1[i]*Nu[i] + 2.0*f2[i]*(Na[i] + Nb[i]) + f3[i]*cval[i]);
     }
 }
 
@@ -123,6 +123,10 @@ void non_linear_term(fftw_complex *c) {
         rval[i] = rval[i] - rval[i]*rval[i]*rval[i];
     }
     fftw_execute(rfft2);
+
+    for(int i = 0; i < nCplxElem; i++) {
+        cval[i] = k[i]*cval[i];
+    }
 }
 
 /*

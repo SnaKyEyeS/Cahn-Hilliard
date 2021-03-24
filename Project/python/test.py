@@ -4,7 +4,7 @@ import numpy as np
 from copy import copy
 from scipy.linalg import norm
 from spectral import irfft2, rfft2, n
-from spectral import etdrk4 as integrate
+from spectral import imex2 as integrate
 
 
 # Load initial & reference solutions
