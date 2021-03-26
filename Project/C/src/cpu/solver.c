@@ -26,6 +26,7 @@ void step(double dt) {
 
         case ETDRK4:
             etdrk4(dt);
+            break;
     }
 }
 

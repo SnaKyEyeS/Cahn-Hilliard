@@ -48,6 +48,7 @@ if (USE_CUDA)
     # GPU-specific files
     include_directories(${PROJECT_SOURCE_DIR}/inc/gpu)
     file(GLOB CUDA_SRCS "${PROJECT_SOURCE_DIR}/src/gpu/*.cu")
+    file(GLOB C_SRCS ${C_SRCS} "${PROJECT_SOURCE_DIR}/src/gpu/*.c")
 
     # Compile *.cu source files
     cuda_compile(CUDA_O ${CUDA_SRCS})

@@ -154,7 +154,7 @@ skip_frame = 10
 # Initialise vectors
 x, h = np.linspace(0, 1, n, endpoint=False, retstep=True)
 c = rfft2(2*np.random.rand(n, n) - 1)   # We work in frequency domain
-sol = imex2(c, dt)
+sol = etdrk4(c, dt)
 
 # Initialize wavelength for second derivative to avoid a repetitive operation
 # Since we use rfftn, one dim is n/2+1 (rfftfreq) and the other is n (fftfreq)
