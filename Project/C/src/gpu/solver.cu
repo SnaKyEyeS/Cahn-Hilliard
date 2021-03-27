@@ -10,7 +10,7 @@ extern "C" {
 
 
 size_t real_size = N_DISCR*N_DISCR*sizeof(double);
-size_t cplx_size = N_DISCR*(1+N_DISCR/2)*sizeof(gpuComplex);
+size_t cplx_size = N_DISCR*(1+N_DISCR/2)*sizeof(complex);
 
 dim3 grid, threads;
 int NblocksReal  = N_DISCR*N_DISCR/256;
@@ -26,7 +26,7 @@ double hh = 1.0 / (N_DISCR*N_DISCR);
  *  Return value is done in-place.
  */
 double *c_gpu;
-gpuComplex *c_hat, *out;
+complex *c_hat, *out;
 
 void step(double dt) {
     switch (SOLVER) {
@@ -44,9 +44,9 @@ void step(double dt) {
  *  IMEX solver.
  */
 int iter = 1;
-gpuComplex *tmp;
-gpuComplex *c_hat_0, *c_hat_1;
-gpuComplex *f_hat_0, *f_hat_1;
+complex *tmp;
+complex *c_hat_0, *c_hat_1;
+complex *f_hat_0, *f_hat_1;
 
 void imex(double dt) {
     // Save current iteration
@@ -77,7 +77,7 @@ void imex(double dt) {
     iter++;
 }
 
-__global__ void imex_bdf1(gpuComplex *c_hat_0, gpuComplex* f_hat_0, double dt, double hh, gpuComplex *c_hat) {
+__global__ void imex_bdf1(complex *c_hat_0, complex* f_hat_0, double dt, double hh, complex *c_hat) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     int j = blockIdx.y * blockDim.y + threadIdx.y;
 
@@ -90,7 +90,7 @@ __global__ void imex_bdf1(gpuComplex *c_hat_0, gpuComplex* f_hat_0, double dt, d
     c_hat[ind].x = (c_hat_0[ind].x + dt*f_hat_0[ind].x) / (1.0 + dt*1e-4*k*k);
     c_hat[ind].y = (c_hat_0[ind].y + dt*f_hat_0[ind].y) / (1.0 + dt*1e-4*k*k);
 }
-__global__ void imex_bdf2(gpuComplex *c_hat_0, gpuComplex* c_hat_1, gpuComplex* f_hat_0, gpuComplex* f_hat_1, double dt, double hh, gpuComplex *c_hat) {
+__global__ void imex_bdf2(complex *c_hat_0, complex* c_hat_1, complex* f_hat_0, complex* f_hat_1, double dt, double hh, complex *c_hat) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     int j = blockIdx.y * blockDim.y + threadIdx.y;
 
@@ -108,7 +108,7 @@ __global__ void imex_bdf2(gpuComplex *c_hat_0, gpuComplex* c_hat_1, gpuComplex* 
  *  ETDRK solver.
  */
 double *e1, *e2, *f1, *f2, *f3, *q;
-gpuComplex *fa, *fb, *fc, *Nu, *Na, *Nb, *Nc;
+complex *fa, *fb, *fc, *Nu, *Na, *Nb, *Nc;
 
 void etdrk4(double dt) {
     // Compute N(u)
@@ -130,25 +130,25 @@ void etdrk4(double dt) {
     etdrk4_next<<<NblocksCplx, NthreadsCplx>>>(c_hat, Nu, Na, Nb, Nc, e1, f1, f2, f3);
 }
 
-__global__ void compute_fa(gpuComplex *c_hat, gpuComplex *Nu, double *e2, double *q, gpuComplex *fa) {
+__global__ void compute_fa(complex *c_hat, complex *Nu, double *e2, double *q, complex *fa) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
     fa[i].x = e2[i]*c_hat[i].x + q[i]*Nu[i].x;
     fa[i].y = e2[i]*c_hat[i].y + q[i]*Nu[i].y;
 }
-__global__ void compute_fb(gpuComplex *c_hat, gpuComplex *Na, double *e2, double *q, gpuComplex *fb) {
+__global__ void compute_fb(complex *c_hat, complex *Na, double *e2, double *q, complex *fb) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
     fb[i].x = e2[i]*c_hat[i].x + q[i]*Na[i].x;
     fb[i].y = e2[i]*c_hat[i].y + q[i]*Na[i].y;
 }
-__global__ void compute_fc(gpuComplex *fa, gpuComplex *Nu, gpuComplex *Nb, double *e2, double *q, gpuComplex *fc) {
+__global__ void compute_fc(complex *fa, complex *Nu, complex *Nb, double *e2, double *q, complex *fc) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
     fc[i].x = e2[i]*fa[i].x + q[i]*(2.0*Nb[i].x - Nu[i].x);
     fc[i].y = e2[i]*fa[i].y + q[i]*(2.0*Nb[i].y - Nu[i].y);
 }
-__global__ void etdrk4_next(gpuComplex* c_hat, gpuComplex *Nu, gpuComplex *Na, gpuComplex *Nb, gpuComplex *Nc, double *e1, double *f1, double *f2, double* f3) {
+__global__ void etdrk4_next(complex* c_hat, complex *Nu, complex *Na, complex *Nb, complex *Nc, double *e1, double *f1, double *f2, double* f3) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
     c_hat[i].x = e1[i]*c_hat[i].x + f1[i]*Nu[i].x + 2.0*f2[i]*(Na[i].x + Nb[i].x) + f3[i]*Nc[i].x;
@@ -159,7 +159,7 @@ __global__ void etdrk4_next(gpuComplex* c_hat, gpuComplex *Nu, gpuComplex *Na, g
 /*
  *  Compute -k*F(c³ -c) where F is the Fourier transform.
  */
-void non_linear_term(gpuComplex *c_hat, gpuComplex *f_hat) {
+void non_linear_term(complex *c_hat, complex *f_hat) {
     scale<<<NblocksCplx, NthreadsCplx>>>(c_hat, f_hat, hh);
     cufftExecZ2D(irfft, f_hat, c_gpu);
     f<<<NblocksReal, NthreadsReal>>>(c_gpu, c_gpu);
@@ -167,7 +167,7 @@ void non_linear_term(gpuComplex *c_hat, gpuComplex *f_hat) {
     deriv<<<grid, threads>>>(f_hat);
 }
 
-__global__ void scale(gpuComplex *c_hat, gpuComplex *out, double hh) {
+__global__ void scale(complex *c_hat, complex *out, double hh) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     out[i].x = c_hat[i].x * hh;
     out[i].y = c_hat[i].y * hh;
@@ -176,7 +176,7 @@ __global__ void f(double *c, double *f) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     f[i] = c[i] - c[i]*c[i]*c[i];
 }
-__global__ void deriv(gpuComplex *c_hat) {
+__global__ void deriv(complex *c_hat) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     int j = blockIdx.y * blockDim.y + threadIdx.y;
 
