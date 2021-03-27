@@ -8,7 +8,6 @@
 #include <fftw3.h>
 
 typedef enum {
-    RK4,
     IMEX,
     ETDRK4,
 } SOLVER_TYPE;

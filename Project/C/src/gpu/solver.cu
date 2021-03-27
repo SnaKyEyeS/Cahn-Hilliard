@@ -196,7 +196,7 @@ __global__ void deriv(complex *c_hat) {
  *  Initialise the various stuff
  */
 void init_solver(double *c, double dt) {
-    switch(SOLVER) {
+    switch (SOLVER) {
         case IMEX:
             cudaMalloc((void **) &c_hat_0, cplx_size);
             cudaMalloc((void **) &c_hat_1, cplx_size);

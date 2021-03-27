@@ -6,7 +6,6 @@
 
 typedef cufftDoubleComplex complex;
 typedef enum {
-    RK4,
     IMEX,
     ETDRK4,
 } SOLVER_TYPE;

@@ -17,9 +17,6 @@ fftw_complex *c_hat;
 
 void step(double dt) {
     switch (SOLVER) {
-        case RK4:
-            break;
-
         case IMEX:
             imex(dt);
             break;
@@ -144,12 +141,7 @@ void init_solver(double *c, double dt) {
     }
 
     // Initialise solver-specific buffers
-    switch(SOLVER) {
-        case RK4:
-            printf("RK4 is not yet implemented !\n");
-            exit(EXIT_FAILURE);
-            break;
-
+    switch (SOLVER) {
         case IMEX:
             buffer  = (fftw_complex*) malloc(5*nCplxElem*sizeof(fftw_complex));
             c_hat   = &buffer[0];
@@ -215,12 +207,7 @@ void init_solver(double *c, double dt) {
  */
 void free_solver() {
     // Solver
-    switch(SOLVER) {
-        case RK4:
-            printf("RK4 is not yet implemented !\n");
-            exit(EXIT_FAILURE);
-            break;
-
+    switch (SOLVER) {
         case IMEX:
             free(buffer);
             break;
