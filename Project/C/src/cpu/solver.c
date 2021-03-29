@@ -43,8 +43,7 @@ void imex(double dt) {
     c_hat = tmp;
 
     // Compute ĉ³ - c
-    non_linear_term(c_hat_0);
-    memcpy(f_hat_0, cval, nCplxElem*sizeof(fftw_complex));
+    non_linear_term(c_hat_0, f_hat_0);
 
     // Compute ĉ_{i+1}
     if (iter == 1) {    // IMEX-BDF1
@@ -78,28 +77,25 @@ fftw_complex *fa, *fb, *fc, *Nu, *Na, *Nb;
 
 void etdrk4(double dt) {
     // Compute N(u)
-    non_linear_term(c_hat);
-    memcpy(Nu, cval, nCplxElem*sizeof(fftw_complex));
+    non_linear_term(c_hat, Nu);
 
     // Compute a & N(a)
     for (int i = 0; i < nCplxElem; i++) {
         fa[i] = e2[i]*c_hat[i] + q[i]*Nu[i];
     }
-    non_linear_term(fa);
-    memcpy(Na, cval, nCplxElem*sizeof(fftw_complex));
+    non_linear_term(fa, Na);
 
     // Compute b & N(b)
     for (int i = 0; i < nCplxElem; i++) {
         fb[i] = e2[i]*c_hat[i] + q[i]*Na[i];
     }
-    non_linear_term(fb);
-    memcpy(Nb, cval, nCplxElem*sizeof(fftw_complex));
+    non_linear_term(fb, Nb);
 
     // Compute c & N(b)
     for (int i = 0; i < nCplxElem; i++) {
         fc[i] = e2[i]*fa[i] + q[i]*(2.0*Nb[i] - Nu[i]);
     }
-    non_linear_term(fc);
+    non_linear_term(fc, cval);
 
     // Compute u_{i+1}
     for (int i = 0; i < nCplxElem; i++) {
@@ -111,7 +107,7 @@ void etdrk4(double dt) {
  *  Compute -k*F(c³ -c) where F is the Fourier transform.
  *  Result is stored in the "rval" array.
  */
-void non_linear_term(fftw_complex *c) {
+void non_linear_term(fftw_complex *c, fftw_complex *out) {
     for(int i = 0; i < nCplxElem; i++) {
         cval[i] = hh*c[i];
     }
@@ -123,7 +119,7 @@ void non_linear_term(fftw_complex *c) {
     fftw_execute(rfft2);
 
     for(int i = 0; i < nCplxElem; i++) {
-        cval[i] *= k[i];
+        out[i] = k[i]*cval[i];
     }
 }
 
