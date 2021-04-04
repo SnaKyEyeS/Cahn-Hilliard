@@ -119,11 +119,6 @@ int main(int argc, char* argv[]) {
 
         // Event input
         glfwPollEvents();
-        if (drag) {
-            double xpos, ypos;
-            glfwGetCursorPos(window, &xpos, &ypos);
-            // printf("(%f, %f)\n", xpos, ypos);
-        }
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
             glfwSetWindowShouldClose(window, GL_TRUE);
         }
