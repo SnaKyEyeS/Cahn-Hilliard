@@ -65,8 +65,8 @@ int main(int argc, char* argv[]) {
 
     // Simulation parameters
     int t = 0;
+    int skip = 10;
     double dt = 1e-6;
-    double skip = 10;
 
     // Initialise Cahn-Hilliard solver
     double *c = (double*) malloc(N_DISCR*N_DISCR*sizeof(double));
@@ -96,16 +96,17 @@ int main(int argc, char* argv[]) {
     glVertexAttribPointer(colAttrib, 1, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
 
+    double cpu_time;
     clock_t begin, end;
     while (!glfwWindowShouldClose(window)) {
         // Timestepping
-        // begin = clock();
+        begin = clock();
         for (int i = 0; i < skip; i++) {
             step(dt);
             t++;
         }
         getSolution(c);
-        // end = clock();
+        end = clock();
 
         // if (dt*t == 1e-3) {
         //     FILE *fp = fopen("etdrk4_128_1e-6_32.txt", "w+");
@@ -143,8 +144,8 @@ int main(int argc, char* argv[]) {
         // end = clock();
 
         // Print stuff
-        // printf("Time = %7.3f [ms]\n", (double)(end-begin)/CLOCKS_PER_SEC*1e3);
-        printf("\rIter = %5d, Time = %.6f  ", t, t*dt);
+        cpu_time += (double)(end - begin) / CLOCKS_PER_SEC*1e3;
+        printf("\rIter n°%5d, Time = %.6f [s] | Avg. CPU time per iteration = %1.3f [ms]", t, t*dt, cpu_time/t);
         fflush(stdout);
     }
 
