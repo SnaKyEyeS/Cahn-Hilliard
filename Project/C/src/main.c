@@ -108,15 +108,6 @@ int main(int argc, char* argv[]) {
         getSolution(c);
         end = clock();
 
-        // if (dt*t == 1e-3) {
-        //     FILE *fp = fopen("etdrk4_128_1e-6_32.txt", "w+");
-        //     for (int i = 0; i < N_DISCR*N_DISCR; i++)
-        //         fprintf(fp, "%.20e\n", c[i]);
-        //     fclose(fp);
-        //     printf("Output written to file\n");
-        //     exit(EXIT_SUCCESS);
-        // }
-
         // Event input
         glfwPollEvents();
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
@@ -142,7 +133,20 @@ int main(int argc, char* argv[]) {
         cpu_time += (double)(end - begin) / CLOCKS_PER_SEC*1e3;
         printf("\rIter n°%5d, Time = %.6f [s] | Avg. CPU time per iteration = %1.3f [ms]", t, t*dt, cpu_time/t);
         fflush(stdout);
+
+        // Save results to file
+        // if (dt*t == 1e-3) {
+        //     char str[80];
+        //     sprintf(str, "imex2_%d_%e.txt", N_DISCR, dt);
+        //     FILE *fp = fopen(str, "w+");
+        //     for (int i = 0; i < N_DISCR*N_DISCR; i++)
+        //         fprintf(fp, "%.20e\n", c[i]);
+        //     fclose(fp);
+        //     printf("\nOutput written to file\n");
+        //     exit(EXIT_SUCCESS);
+        // }
     }
+
 
     glDeleteBuffers(1, &ebo);
     glDeleteBuffers(1, &vbo_pos);
