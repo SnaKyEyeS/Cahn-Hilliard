@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from copy import copy
 from tqdm import tqdm
 from matplotlib.animation import FuncAnimation
+from scipy.linalg import norm
 from scipy.fft import rfft2, irfft2, rfftfreq, fftfreq
 
 
@@ -141,6 +142,24 @@ def rk4(c, dt):
         k4 = f(c + dt*k3)
 
         c += dt*(k1 + 2*k2 + 2*k3 + k4)/6
+        yield c
+
+
+def euler_implicit(c, dt):
+    """
+    Time stepping/integration scheme using the implicit euler scheme
+    """
+    f = lambda c: -k*(rfft2(irfft2(c)**3) - c) - (a*k)**2*c
+    df = lambda c: -k*(rfft2(irfft2(c)**2)/(2*np.pi) - 1) - (a*k)**2
+
+    while True:
+        c_next = copy(c)
+        error = 1
+        while error > 1e-10:
+            dc = -(c_next - c - dt*f(c_next)) / (1 - dt*df(c_next))
+            c_next += dc
+            error = norm(np.abs(dc))
+        c = copy(c_next)
         yield c
 
 

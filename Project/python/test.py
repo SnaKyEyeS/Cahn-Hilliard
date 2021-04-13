@@ -4,7 +4,7 @@ import numpy as np
 from copy import copy
 from scipy.linalg import norm
 from spectral import irfft2, rfft2, n
-from spectral import imex2 as integrate
+from spectral import euler_implicit as integrate
 
 
 # Load initial & reference solutions
@@ -13,7 +13,7 @@ c_init = rfft2(np.loadtxt("c_128_init.txt").reshape(n, n))
 c_ref = np.loadtxt("c_128_ref.txt").reshape(n, n)
 
 # Initialise stuff
-dts = [1e-6/4, 1e-6/8]
+dts = [1e-6, 1e-6/2]
 error = list()
 
 for dt in dts:
@@ -28,7 +28,7 @@ for dt in dts:
 
         sys.stdout.write(f"\rt = {dt*iter:.6f} [s]")
         iter += 1
-    error.append(norm(irfft2(c) - c_ref))
+    error.append(norm(irfft2(c) - c_ref) / norm(c_ref))
 
 print(f"\rError 1 = {error[0]}")
 print(f"\rError 2 = {error[1]}")
