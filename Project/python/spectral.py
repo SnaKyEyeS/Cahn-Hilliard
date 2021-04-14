@@ -155,10 +155,12 @@ def euler_implicit(c, dt):
     while True:
         c_next = copy(c)
         error = 1
-        while error > 1e-10:
+        iter = 0
+        while error > 1e-10 and iter < 100:
             dc = -(c_next - c - dt*f(c_next)) / (1 - dt*df(c_next))
             c_next += dc
             error = norm(np.abs(dc))
+            iter += 1
         c = copy(c_next)
         yield c
 
