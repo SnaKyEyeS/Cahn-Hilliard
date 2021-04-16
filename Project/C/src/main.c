@@ -8,6 +8,9 @@
 #include "shaders.h"
 #include "solver.h"
 
+#define max(a, b)   (a > b) ?  a: b
+#define min(a, b)   (a < b) ?  a: b
+
 
 int main(int argc, char* argv[]) {
 
@@ -121,8 +124,14 @@ int main(int argc, char* argv[]) {
         glClear(GL_COLOR_BUFFER_BIT);
 
         // Update plot
+        double c_max =  1.0;
+        double c_min = -1.0;
+        // for (int i = 0; i < N_DISCR*N_DISCR; i++) {
+        //     c_max = max(c_max, c[i]);
+        //     c_min = min(c_min, c[i]);
+        // }
         for (int i = 0; i < N_DISCR*N_DISCR; i++) {
-            colors[i] = (float) ((c[i] + 1.0)/2.0);
+            colors[i] = (float) ((c[i] - c_min) / (c_max - c_min));
         }
         glBindBuffer(GL_ARRAY_BUFFER, vbo_colors);
         glBufferData(GL_ARRAY_BUFFER, N_DISCR*N_DISCR*sizeof(GLfloat), colors, GL_STREAM_DRAW);
