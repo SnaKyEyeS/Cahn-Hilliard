@@ -167,14 +167,13 @@ def euler_implicit(c, dt):
 
 # Problem parameters
 a = 1e-2
-n = 2
+n = 128
 dt = 1e-6
 n_step = 12000*4
 skip_frame = 10
 
 # Initialise vectors
 x, h = np.linspace(0, 1, n, endpoint=False, retstep=True)
-
 c = rfft2(2*np.random.rand(n, n) - 1)   # We work in frequency domain
 sol = etdrk4(c, dt)
 
