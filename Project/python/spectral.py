@@ -28,7 +28,7 @@ def etdrk4(u, dt):
     N = lambda u: k * (u - rfft2(irfft2(u)**3))
 
     # Linear term
-    L = -(1e-2*k)**2
+    L = -kappa * k**2
 
     # Pre-computations
     E = np.exp(L*dt)
@@ -71,7 +71,7 @@ def imex2(c, dt):
     c_prev = copy(c)
     f_prev = f(c)
     c -= dt*k*f_prev
-    c /= (1 + dt*(a*k)**2)
+    c /= (1 + dt*kappa*k**2)
     yield c
 
     # Loop !
@@ -79,7 +79,7 @@ def imex2(c, dt):
         c_curr = copy(c)
         f_curr = f(c_curr)
         c = 4*c_curr - c_prev - 2*dt*k*(2*f_curr - f_prev)
-        c /= (3 + 2*dt*(a*k)**2)
+        c /= (3 + 2*dt*k**2)
         c_prev = copy(c_curr)
         f_prev = copy(f_curr)
         yield c
@@ -96,21 +96,21 @@ def imex4(c, dt):
     c_3 = copy(c)
     f_3 = f(c)
     c = c_3 - dt*k*f_3
-    c /= (1 + dt*(a*k)**2)
+    c /= (1 + dt*kappa*k**2)
     yield c
 
     # Second step
     c_2 = copy(c)
     f_2 = f(c)
     c = 4*c_2 - c_3 - 2*dt*k*(2*f_2 - f_3)
-    c /= (3 + 2*dt*(a*k)**2)
+    c /= (3 + 2*dt*kappa*k**2)
     yield c
 
     # Third step
     c_1 = copy(c)
     f_1 = f(c)
     c = 18*c_1 - 9*c_2 + 2*c_3 - 6*dt*k*(3*f_1 - 3*f_2 + f_3)
-    c /= (11 + 6*dt*(a*k)**2)
+    c /= (11 + 6*dt*kappa*k**2)
     yield c
 
     # Loop !
@@ -118,7 +118,7 @@ def imex4(c, dt):
         c_0 = copy(c)
         f_0 = f(c)
         c = 48*c_0 - 36*c_1 + 16*c_2 - 3*c_3 - 12*dt*k*(4*f_0 - 6*f_1 + 4*f_2 - f_3)
-        c /= (25 + 12*dt*(a*k)**2)
+        c /= (25 + 12*dt*kappa*k**2)
         c_3 = copy(c_2)
         c_2 = copy(c_1)
         c_1 = copy(c_0)
@@ -132,7 +132,7 @@ def rk4(c, dt):
     """
     Time stepping/integration scheme using the classical Runge-Kutta 4 scheme
     """
-    f = lambda c: -k*(rfft2(irfft2(c)**3) - c + a**2*k*c)
+    f = lambda c: -k*(rfft2(irfft2(c)**3) - c + kappa*k*c)
 
     # Loop !
     while True:
@@ -149,8 +149,8 @@ def euler_implicit(c, dt):
     """
     Time stepping/integration scheme using the implicit euler scheme
     """
-    f = lambda c: -k*(rfft2(irfft2(c)**3) - c) - (a*k)**2*c
-    df = lambda c: -k*(rfft2(irfft2(c)**2)/(2*np.pi) - 1) - (a*k)**2
+    f = lambda c: -k*(rfft2(irfft2(c)**3) - c) - kappa*k**2*c
+    df = lambda c: -k*(rfft2(irfft2(c)**2)/(2*np.pi) - 1) - kappa*k**2
 
     while True:
         c_next = copy(c)
@@ -166,7 +166,7 @@ def euler_implicit(c, dt):
 
 
 # Problem parameters
-a = 1e-2
+kappa = 1e-4
 n = 128
 dt = 1e-6
 n_step = 12000*4
