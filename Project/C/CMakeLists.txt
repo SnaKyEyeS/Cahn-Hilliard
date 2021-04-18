@@ -32,6 +32,10 @@ endif (NOT SOLVER)
 message(STATUS "Using the ${SOLVER} solver.")
 add_definitions(-DSOLVER=${SOLVER})
 
+# Define some physical constants
+set(KAPPA 1e-4)
+add_definitions(-DKAPPA=${KAPPA})
+
 # CPU or GPU (CUDA)
 option(USE_CUDA "Compile GPU code, using CUDA." OFF)
 if (USE_CUDA)
