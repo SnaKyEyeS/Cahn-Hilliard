@@ -1,0 +1,17 @@
+from spectral import etdrk4 as integrate
+import time
+from pypapi import events, papi_high as high
+
+
+
+# start = time.time()
+high.start_counters([events.PAPI_DP_OPS,])
+#
+for _ in range(1000):
+    c = next(sol)
+#
+x=high.stop_counters()
+
+print(x)
+# end = time.time()
+# print(end-start)

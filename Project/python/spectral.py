@@ -1,7 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import time
-from pypapi import events, papi_high as high
 
 from copy import copy
 from tqdm import tqdm
@@ -168,11 +166,9 @@ def euler_implicit(c, dt):
 
 
 # Problem parameters
-<<<<<<< HEAD
-a = 1e-2
-=======
+
 kappa = 1e-4
->>>>>>> fc51e48430bf6e034632f60535a292133ed78c93
+
 n = 128
 dt = 1e-6
 n_step = 12000*4
@@ -188,30 +184,19 @@ sol = etdrk4(c, dt)
 k_x, k_y = np.meshgrid(rfftfreq(n, h/(2*np.pi)), fftfreq(n, h/(2*np.pi)))
 k = k_x**2 + k_y**2
 
-# start = time.time()
-high.start_counters([events.PAPI_DP_OPS,])
-#
-for _ in range(1000):
-    c = next(sol)
-#
-x=high.stop_counters()
-
-print(x)
-# end = time.time()
-# print(end-start)
 
 # Initialize animation
-# if __name__ == "__main__":
-#     fig, ax = plt.subplots()
-#     img = ax.imshow(irfft2(c), cmap="jet", vmin=-1, vmax=1)
-#     fig.colorbar(img, ax=ax)
-#     ax.axis("off")
-#     title = ax.text(.5, .1, "", bbox={'facecolor': 'w', 'alpha': 0.7, 'pad': 5}, transform=ax.transAxes, ha="center")
-#
-#     # Start animation
-#     anim = FuncAnimation(fig, update, frames=int(n_step/skip_frame), interval=1, blit=True)
-#     if False:
-#         pbar = tqdm(total=int(n_step/skip_frame))
-#         anim.save("cahn_hilliard_spectral.mp4", fps=500, progress_callback=lambda i, n: pbar.update(1))
-#     else:
-#         plt.show()
+if __name__ == "__main__":
+    fig, ax = plt.subplots()
+    img = ax.imshow(irfft2(c), cmap="jet", vmin=-1, vmax=1)
+    fig.colorbar(img, ax=ax)
+    ax.axis("off")
+    title = ax.text(.5, .1, "", bbox={'facecolor': 'w', 'alpha': 0.7, 'pad': 5}, transform=ax.transAxes, ha="center")
+
+    # Start animation
+    anim = FuncAnimation(fig, update, frames=int(n_step/skip_frame), interval=1, blit=True)
+    if False:
+        pbar = tqdm(total=int(n_step/skip_frame))
+        anim.save("cahn_hilliard_spectral.mp4", fps=500, progress_callback=lambda i, n: pbar.update(1))
+    else:
+        plt.show()
