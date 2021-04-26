@@ -14,10 +14,8 @@
 
 int main(int argc, char* argv[]) {
 
-    // Initialise window
+    // Initialise window & shaders
     GLFWwindow *window = init_window();
-
-    // Initialise shaders
     init_shaders();
 
     // Create Vertex Array Object
@@ -97,20 +95,19 @@ int main(int argc, char* argv[]) {
     GLint colAttrib = glGetAttribLocation(shaderProgram, "color");
     glEnableVertexAttribArray(colAttrib);
     glVertexAttribPointer(colAttrib, 1, GL_FLOAT, GL_FALSE, 0, (void*)0);
-    //
-    //
-    // double cpu_time;
-    // clock_t begin, end;
+
+    // Window loop
+    double cpu_time;
+    clock_t begin, end;
     while (!glfwWindowShouldClose(window)) {
         // Timestepping
-        // begin = clock();
+        begin = clock();
         for (int i = 0; i < skip; i++) {
             step(dt);
             t++;
         }
         getSolution(c);
-        // end = clock();
-        // printf("time = %f \n", (double)(end - begin) / CLOCKS_PER_SEC);
+        end = clock();
 
         // Event input
         glfwPollEvents();
@@ -139,10 +136,10 @@ int main(int argc, char* argv[]) {
         glDrawElements(GL_LINES_ADJACENCY, 4*(N_DISCR-1)*(N_DISCR-1), GL_UNSIGNED_INT, 0);
         // end = clock();
 
-        // // Print stuff
-        // cpu_time += (double)(end - begin) / CLOCKS_PER_SEC*1e3;
-        // printf("\rIter n°%5d, Time = %.6f [s] | Avg. CPU time per iteration = %1.3f [ms]", t, t*dt, cpu_time/t);
-        // fflush(stdout);
+        // Print stuff
+        cpu_time += (double)(end - begin) / CLOCKS_PER_SEC*1e3;
+        printf("\rIter n°%5d, Time = %.6f [s] | Avg. CPU time per iteration = %1.3f [ms]", t, t*dt, cpu_time/t);
+        fflush(stdout);
 
         // Save results to file
         // if (dt*t == 1e-3) {
@@ -157,7 +154,7 @@ int main(int argc, char* argv[]) {
         // }
     }
 
-
+    // Free memory
     glDeleteBuffers(1, &ebo);
     glDeleteBuffers(1, &vbo_pos);
     glDeleteBuffers(1, &vbo_colors);
