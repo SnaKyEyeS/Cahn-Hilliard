@@ -48,12 +48,12 @@ void imex(double dt) {
     // Compute ĉ_{i+1}
     if (iter == 1) {    // IMEX-BDF1
         for(int i = 0; i < nCplxElem; i++) {
-            c_hat[i] = (c_hat_0[i] + dt*f_hat_0[i]) / (1.0 + dt*1e-4*k[i]*k[i]);
+            c_hat[i] = (c_hat_0[i] + dt*f_hat_0[i]) / (1.0 + dt*KAPPA*k[i]*k[i]);
         }
 
     } else {            // IMEX-BDF2
         for(int i = 0; i < nCplxElem; i++) {
-            c_hat[i] = (4.0*c_hat_0[i] - c_hat_1[i] + 2.0*dt*(2.0*f_hat_0[i] - f_hat_1[i])) / (3.0 + 2e-4*dt*k[i]*k[i]);
+            c_hat[i] = (4.0*c_hat_0[i] - c_hat_1[i] + 2.0*dt*(2.0*f_hat_0[i] - f_hat_1[i])) / (3.0 + 2*KAPPA*dt*k[i]*k[i]);
         }
     }
 
@@ -164,7 +164,7 @@ void init_solver(double *c, double dt) {
             q  = &e1[5*nCplxElem];
 
             for (int i = 0; i < nCplxElem; i++) {
-                double l = - 1e-4*k[i]*k[i];
+                double l = - KAPPA*k[i]*k[i];
                 e1[i] = exp(l*dt);
                 e2[i] = exp(l*dt / 2.0);
 

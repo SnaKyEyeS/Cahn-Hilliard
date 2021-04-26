@@ -9,7 +9,7 @@ void init_etdrk4(double *e1, double *e2, double *f1, double *f2, double *f3, dou
             int i_  = (i < N_DISCR/2) ? i : i-N_DISCR;
             double k = FOUR_PI_SQUARED * (j*j + i_*i_);
 
-            double l = - 1e-4*k*k;
+            double l = - KAPPA*k*k;
             e1[ind] = exp(l*dt);
             e2[ind] = exp(l*dt / 2.0);
 
