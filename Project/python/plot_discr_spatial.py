@@ -13,7 +13,8 @@ error = list()
 for n in N:
     C = np.loadtxt("spatial_discr_results/gaussian/n_" + str(int(n)) + "_etdrk4.txt")
     step = int(512/n)
-    error.append(norm( C - C_ref[0:511:step, 0:511:step]) / norm(C_ref[0:511:step, 0:511:step]))
+    error.append(norm( C - C_ref[0:511:step, 0:511:step], np.inf) / norm(C_ref[0:511:step, 0:511:step], np.inf))
+    print(norm(C_ref[0:511:step, 0:511:step], np.inf))
 
     #irfft2(rfft2(C), s=(512,512))
 
