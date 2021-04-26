@@ -12,26 +12,21 @@ FFTW = [0.000512, 0.003270, 0.005726, 0.026156, 0.128126, 0.636778, 1.582049, 2.
 fig, ax = plt.subplots()
 mpl.rcParams.update({"text.usetex": True})
 
-ax.set(xlabel='Spatial discretisation [N]', ylabel='Time [s]',
-       title='Execution time for 1000 iterations')
-
-python_plot = ax.plot(N, python, 'r', label = 'python')
-FFTW_plot = ax.plot(N, FFTW, 'b', label = 'FFTW')
-MKL_plot = ax.plot(N, MKL, 'g', label = 'MKL')
+python_plot = ax.plot(N, python, "--v", label='python')
+FFTW_plot = ax.plot(N, FFTW, "--o", label='FFTW')
+MKL_plot = ax.plot(N, MKL, "--D", label='MKL')
 
 # reference en N log N
 x = np.linspace(500, 1024)
 ref_fact = (x**2*np.log(x))/(768**2*np.log(768))
 ref = 200 * (ref_fact)
 
-ref_plot = ax.plot(x, ref, 'k--', label = '$\\mathcal{O}(n^2\\log(n))$')
-
-handles, labels = ax.get_legend_handles_labels()
-
-ax.legend(handles, labels)
+ref_plot = ax.plot(x, ref, 'k--', label='$\\mathcal{O}(n^2\\log(n))$')
 
 ax.set_yscale("log")
 ax.set_xscale("log", base=2)
-
-
+plt.grid(True, which="both", ls="--")
+plt.xlabel("n")
+plt.ylabel("Execution time [s]")
+plt.legend()
 plt.show()
