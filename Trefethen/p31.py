@@ -14,16 +14,12 @@ gam_inv = 0*zz
 
 for i in range(n):
     t = c + r*exp(1j*theta[i])
-    gam_inv = gam_inv + exp(t)*t**zz*(t - c)
+    gam_inv = gam_inv + exp(t)*t**(-zz)*(t - c)
 gam = n / gam_inv
 
 fig = plt.figure()
 ax = fig.add_subplot(111, projection="3d")
-ax.plot_surface(xx, yy, abs(gam), cmap="viridis", edgecolor="none")
-ax.set_xlabel("Re(z)")
-ax.set_ylabel("Im(z)")
-ax.set_xlim(-3.5, 4)
-ax.set_ylim(-2.5, 2.5)
-ax.set_zlim(0, 6)
-
+ax.plot_surface(xx, yy, abs(gam), cmap="jet", edgecolor="black", vmin=0, vmax=6)
+ax.set_xlabel("$\Re(z)$"); ax.set_ylabel("$\Im(z)$"); ax.set_zlabel("$|\Gamma(z)|$")
+ax.set_xlim3d(-3.5, 4); ax.set_ylim3d(-2.5, 2.5); ax.set_zlim3d(0, 6); ax.view_init(20, -120)
 plt.show()
