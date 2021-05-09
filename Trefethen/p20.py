@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 # Grid & initial data
 n = 24; x = cos(pi*linspace(0, 1, n+1)); y = x
-dt = 6/n**2; plotgap = round(1./3./dt); dt = 1/3/plotgap
+dt = 6/n**2; plotgap = round(1./3./dt); dt = 1./3./plotgap
 xx, yy = meshgrid(x, y)
 vv = exp(-40*((xx-.4)**2 + yy**2)); vv_old = vv
 
@@ -17,7 +17,7 @@ for k in range(0, 3*plotgap+1):
         interp = arange(-1, 1+1/16, 1/16)
         xxx, yyy = meshgrid(interp, interp)
         vvv = interp2d(x, y, vv, kind="cubic")(interp, interp)
-        ax = fig.add_subplot(2, 2, int(k/plotgap + 1), projection="3d")
+        ax = fig.add_subplot(2, 2, k//plotgap+1, projection="3d")
         ax.plot_surface(xxx, yyy, vvv, cmap="jet", edgecolor="black")
         ax.set_xlim3d([-1, 1]); ax.set_ylim3d([-1, 1]), ax.set_zlim3d([-.15, 1])
         ax.set_xlabel("x"); ax.set_ylabel("y"); ax.set_title(f"t = {k*dt:.4f}")
