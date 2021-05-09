@@ -18,26 +18,50 @@ include_directories(${PROJECT_SOURCE_DIR}/inc)
 file(GLOB C_SRCS "${PROJECT_SOURCE_DIR}/src/*.c")
 
 # Compile options
+option(USE_CUDA "Compile GPU code, using CUDA." OFF)
+option(MOBILITY "Mobility coefficient model." OFF)
 option(N_DISCR "Discretisation grid to use." OFF)
+option(SOLVER "Solver to use." OFF)
+
+# Number of discretisation points
 if (NOT N_DISCR)
     set(N_DISCR 128)
 endif (NOT N_DISCR)
 message(STATUS "Using a ${N_DISCR}x${N_DISCR} grid.")
 add_definitions(-DN_DISCR=${N_DISCR})
 
-option(SOLVER "Solver to use." OFF)
+# Solver to use
 if (NOT SOLVER)
     set(SOLVER ETDRK4)
 endif (NOT SOLVER)
 message(STATUS "Using the ${SOLVER} solver.")
 add_definitions(-DSOLVER=${SOLVER})
 
-# Define some physical constants
-set(KAPPA 1e-4)
+# Constant or Variable mobility ?
+if (NOT MOBILITY OR MOBILITY STREQUAL CONSTANT)
+    message(STATUS "Simulating constant mobility.")
+    set(TIMESTEP 1e-6)
+    set(KAPPA 1e-4)
+    add_definitions(-DCONSTANT_MOBILITY)
+
+elseif (MOBILITY STREQUAL VARIABLE)
+    message(STATUS "Simulating variable mobility.")
+    set(TIMESTEP 1)
+    set(KAPPA 1)
+    add_definitions(-DVARIABLE_MOBILITY)
+
+    if (NOT SOLVER STREQUAL ETDRK4 OR NOT USE_CUDA)
+        message(FATAL_ERROR "Variable mobility is only implemented for ETDRK4 using CUDA.")
+    endif ()
+
+else ()
+    message(FATAL_ERROR "Unknown mobility model type.")
+endif ()
+
+add_definitions(-DTIMESTEP=${TIMESTEP})
 add_definitions(-DKAPPA=${KAPPA})
 
 # CPU or GPU (CUDA)
-option(USE_CUDA "Compile GPU code, using CUDA." OFF)
 if (USE_CUDA)
     # Enable CUDA
     message(STATUS "Compiling with CUDA...")
@@ -57,7 +81,7 @@ if (USE_CUDA)
     # Compile *.cu source files
     cuda_compile(CUDA_O ${CUDA_SRCS})
 
-else (USE_CUDA)
+else ()
     # CPU-specific files
     include_directories(${PROJECT_SOURCE_DIR}/inc/cpu)
     file(GLOB C_SRCS ${C_SRCS} "${PROJECT_SOURCE_DIR}/src/cpu/*.c")
@@ -67,13 +91,13 @@ else (USE_CUDA)
     if (MKL_FOUND)          # Intel's MKL
         include_directories(${MKL_INCLUDE_DIR})
         set(EXT_LIBS ${EXT_LIBS} ${MKL_LIBRARIES})
-    else (MKL_FOUND)        # FFTW3
+    else ()        # FFTW3
         message(STATUS "Intel's MKL not found -- proceeding with FFTW3.")
         find_package(FFTW REQUIRED)
         include_directories(${FFTW_INCLUDE_DIRS})
         set(EXT_LIBS ${EXT_LIBS} ${FFTW_LIBRARIES})
-    endif (MKL_FOUND)
-endif (USE_CUDA)
+    endif ()
+endif ()
 
 # GLEW
 find_package(GLEW REQUIRED)

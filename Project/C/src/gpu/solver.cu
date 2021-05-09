@@ -159,6 +159,110 @@ __global__ void etdrk4_next(complex* c_hat, complex *Nu, complex *Na, complex *N
 /*
  *  Compute -k*F(c³ -c) where F is the Fourier transform.
  */
+#ifdef VARIABLE_MOBILITY
+double  *f_gpu;
+double  *rvec_x, *rvec_y;
+complex *cvec_x, *cvec_y, *cvec;;
+
+void non_linear_term(complex *c_hat, complex *f_hat) {
+    // Compute c
+    scale<<<NblocksCplx, NthreadsCplx>>>(c_hat, f_hat, hh);
+    cufftExecZ2D(irfft, f_hat, c_gpu);
+    clamp<<<NblocksReal, NthreadsReal>>>(c_gpu);
+
+    // Compute f_hat
+    f<<<NblocksReal, NthreadsReal>>>(c_gpu, f_gpu);
+    cufftExecD2Z(rfft, f_gpu, f_hat);
+
+    // Add linear term & take gradient
+    add_linear<<<grid, threads>>>(f_hat, c_hat, cvec);
+    gradient<<<grid, threads>>>(cvec, cvec_x, cvec_y, hh);
+
+    // Mobility
+    cufftExecZ2D(irfft, cvec_x, rvec_x);
+    cufftExecZ2D(irfft, cvec_y, rvec_y);
+    mobility<<<NblocksReal, NthreadsReal>>>(rvec_x, rvec_y, c_gpu);
+    cufftExecD2Z(rfft, rvec_x, cvec_x);
+    cufftExecD2Z(rfft, rvec_y, cvec_y);
+
+    // Take the divergence
+    divergence<<<grid, threads>>>(cvec_x, cvec_y, f_hat);
+}
+
+__global__ void scale(complex *c_hat, complex *out, double hh) {
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    out[i].x = c_hat[i].x * hh;
+    out[i].y = c_hat[i].y * hh;
+}
+__global__ void f(double *c, double *f) {
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    f[i] = c[i]*c[i]*c[i] - c[i];
+}
+__global__ void add_linear(complex *f_hat, complex *c_hat, complex *out) {
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    int j = blockIdx.y * blockDim.y + threadIdx.y;
+
+    // Wavenumber
+    double l = (i < N_DISCR/2) ? i : i-N_DISCR;
+    double k = FOUR_PI_SQUARED * (j*j + l*l) / (N_DISCR*N_DISCR);
+
+    // Compute the derivative
+    int ind = i*(N_DISCR/2+1)+j;
+    out[ind].x = f_hat[ind].x + k*c_hat[ind].x;
+    out[ind].y = f_hat[ind].y + k*c_hat[ind].y;
+}
+__global__ void gradient(complex *f, complex *grad_x, complex *grad_y, double hh) {
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    int j = blockIdx.y * blockDim.y + threadIdx.y;
+
+    // Wavenumber
+    double l = (i < N_DISCR/2) ? i : i-N_DISCR;
+    double k_x = 2.0*M_PI*l / N_DISCR;
+    double k_y = 2.0*M_PI*j / N_DISCR;
+
+    // Compute the gradient
+    int ind = i*(N_DISCR/2+1)+j;
+
+    grad_x[ind].x = -k_x * f[ind].y * hh;
+    grad_x[ind].y =  k_x * f[ind].x * hh;
+
+    grad_y[ind].x = -k_y * f[ind].y * hh;
+    grad_y[ind].y =  k_y * f[ind].x * hh;
+}
+__global__ void mobility(double *f_x, double *f_y, double *c) {
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+
+    f_x[i] *= (1 - c[i]*c[i] - .5);
+    f_y[i] *= (1 - c[i]*c[i] - .5);
+}
+__global__ void divergence(complex *f_x, complex *f_y, complex *div) {
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    int j = blockIdx.y * blockDim.y + threadIdx.y;
+
+    // Wavenumber
+    double l = (i < N_DISCR/2) ? i : i-N_DISCR;
+    double k_x = 2.0*M_PI*l / N_DISCR;
+    double k_y = 2.0*M_PI*j / N_DISCR;
+    double k = FOUR_PI_SQUARED * (j*j + l*l) / (N_DISCR*N_DISCR);
+
+    // Compute the divergence
+    int ind = i*(N_DISCR/2+1)+j;
+
+    div[ind].x = -(k_x*f_x[ind].y + k_y*f_y[ind].y) - .5*k*div[ind].x;
+    div[ind].y =   k_x*f_x[ind].x + k_y*f_y[ind].x  - .5*k*div[ind].y;
+}
+__global__ void clamp(double *c) {
+     int i = blockIdx.x * blockDim.x + threadIdx.x;
+
+     if (c[i] > 1.0) {
+         c[i] = 1.0;
+     } else if (c[i] < -1.0) {
+        c[i] = -1.0;
+     }
+}
+#endif
+
+#ifdef CONSTANT_MOBILITY
 void non_linear_term(complex *c_hat, complex *f_hat) {
     scale<<<NblocksCplx, NthreadsCplx>>>(c_hat, f_hat, hh);
     cufftExecZ2D(irfft, f_hat, c_gpu);
@@ -189,7 +293,7 @@ __global__ void deriv(complex *c_hat) {
     c_hat[ind].x *= k;
     c_hat[ind].y *= k;
 }
-
+#endif
 
 
 /*
@@ -254,6 +358,16 @@ void init_solver(double *c, double dt) {
     cudaMalloc((void **) &out,     cplx_size);
     cudaMalloc((void **) &c_hat,   cplx_size);
 
+#ifdef VARIABLE_MOBILITY
+    // NL term
+    cudaMalloc((void **) &f_gpu,   real_size);
+    cudaMalloc((void **) &rvec_x,  real_size);
+    cudaMalloc((void **) &rvec_y,  real_size);
+    cudaMalloc((void **) &cvec_x,  cplx_size);
+    cudaMalloc((void **) &cvec_y,  cplx_size);
+    cudaMalloc((void **) &cvec,    cplx_size);
+#endif
+
     // cuFFT
     cufftPlan2d(&rfft,  N_DISCR, N_DISCR, CUFFT_D2Z);
     cufftPlan2d(&irfft, N_DISCR, N_DISCR, CUFFT_Z2D);
@@ -297,6 +411,16 @@ void free_solver() {
     cudaFree(c_gpu);
     cudaFree(c_hat);
     cudaFree(out);
+
+#ifdef VARIABLE_MOBILITY
+    // NL term
+    cudaFree(f_gpu);
+    cudaFree(rvec_x);
+    cudaFree(rvec_y);
+    cudaFree(cvec_x);
+    cudaFree(cvec_y);
+    cudaFree(cvec);
+#endif
 
     // cuFFT
     cufftDestroy(rfft);

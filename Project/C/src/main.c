@@ -67,12 +67,12 @@ int main(int argc, char* argv[]) {
     // Simulation parameters
     int t = 0;
     int skip = 10;
-    double dt = 1e-6;
+    double dt = TIMESTEP;
 
     // Initialise Cahn-Hilliard solver
     double *c = (double*) malloc(N_DISCR*N_DISCR*sizeof(double));
     for (int i = 0; i < N_DISCR*N_DISCR; i++) {
-        c[i] = 2.0*((double)rand() / (double)RAND_MAX ) - 1.0;
+        c[i] = .2*((double)rand() / (double)RAND_MAX ) - .1;
     }
     init_solver(c, dt);
 
