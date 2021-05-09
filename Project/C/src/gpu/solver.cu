@@ -232,8 +232,8 @@ __global__ void gradient(complex *f, complex *grad_x, complex *grad_y, double hh
 __global__ void mobility(double *f_x, double *f_y, double *c) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
-    f_x[i] *= (1 - c[i]*c[i] - .5);
-    f_y[i] *= (1 - c[i]*c[i] - .5);
+    f_x[i] *= (1 - c[i]*c[i] - A);
+    f_y[i] *= (1 - c[i]*c[i] - A);
 }
 __global__ void divergence(complex *f_x, complex *f_y, complex *div) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -243,13 +243,13 @@ __global__ void divergence(complex *f_x, complex *f_y, complex *div) {
     double l = (i < N_DISCR/2) ? i : i-N_DISCR;
     double k_x = 2.0*M_PI*l / N_DISCR;
     double k_y = 2.0*M_PI*j / N_DISCR;
-    double k = FOUR_PI_SQUARED * (j*j + l*l) / (N_DISCR*N_DISCR);
+    double k = k_x*k_x + k_y*k_y;
 
     // Compute the divergence
     int ind = i*(N_DISCR/2+1)+j;
 
-    div[ind].x = -(k_x*f_x[ind].y + k_y*f_y[ind].y) - .5*k*div[ind].x;
-    div[ind].y =   k_x*f_x[ind].x + k_y*f_y[ind].x  - .5*k*div[ind].y;
+    div[ind].x = -(k_x*f_x[ind].y + k_y*f_y[ind].y) - A*k*div[ind].x;
+    div[ind].y =   k_x*f_x[ind].x + k_y*f_y[ind].x  - A*k*div[ind].y;
 }
 __global__ void clamp(double *c) {
      int i = blockIdx.x * blockDim.x + threadIdx.x;

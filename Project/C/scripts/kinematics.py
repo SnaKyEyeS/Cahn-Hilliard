@@ -94,7 +94,7 @@ f = lambda x, a, b, m: a + b*x**m
 idx = 0
 t = np.array(t)
 popt, pcov = fit(f, t[idx:], 1/k1[idx:], bounds=(0, [np.inf, np.inf, .5]), maxfev=10000)
-print(f"Power growth law exponent m = {popt[-1]}")
+print(f"Power growth law exponent = {1/popt[-1]}")
 
 # Plot L(t)
 plt.clf()

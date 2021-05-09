@@ -48,6 +48,7 @@ elseif (MOBILITY STREQUAL VARIABLE)
     message(STATUS "Simulating variable mobility.")
     set(TIMESTEP 1)
     set(KAPPA 1)
+    add_definitions(-DA=0.5)
     add_definitions(-DVARIABLE_MOBILITY)
 
     if (NOT SOLVER STREQUAL ETDRK4 OR NOT USE_CUDA)

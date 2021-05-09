@@ -14,7 +14,7 @@ void init_etdrk4(double *e1, double *e2, double *f1, double *f2, double *f3, dou
 #endif
 #ifdef VARIABLE_MOBILITY
             double k = FOUR_PI_SQUARED * (j*j + i_*i_) / (N_DISCR*N_DISCR);
-            double l = - .5*KAPPA*k*k;
+            double l = - A*KAPPA*k*k;
 #endif
 
             e1[ind] = exp(l*dt);
