@@ -53,7 +53,7 @@ void imex(double dt) {
 
     } else {            // IMEX-BDF2
         for(int i = 0; i < nCplxElem; i++) {
-            c_hat[i] = (4.0*c_hat_0[i] - c_hat_1[i] + 2.0*dt*(2.0*f_hat_0[i] - f_hat_1[i])) / (3.0 + 2*KAPPA*dt*k[i]*k[i]);
+            c_hat[i] = (4.0*c_hat_0[i] - c_hat_1[i] + 2.0*dt*(2.0*f_hat_0[i] - f_hat_1[i])) / (3.0 + 2.0*KAPPA*dt*k[i]*k[i]);
         }
     }
 

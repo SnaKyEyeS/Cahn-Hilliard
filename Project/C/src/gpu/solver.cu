@@ -100,8 +100,8 @@ __global__ void imex_bdf2(complex *c_hat_0, complex* c_hat_1, complex* f_hat_0, 
 
     // Compute \hat{F}
     int ind = i*(N_DISCR/2+1)+j;
-    c_hat[ind].x = (4.0*c_hat_0[ind].x - c_hat_1[ind].x + 2.0*dt*(2.0*f_hat_0[ind].x - f_hat_1[ind].x)) / (3.0 + 2*KAPPA*dt*k*k);
-    c_hat[ind].y = (4.0*c_hat_0[ind].y - c_hat_1[ind].y + 2.0*dt*(2.0*f_hat_0[ind].y - f_hat_1[ind].y)) / (3.0 + 2*KAPPA*dt*k*k);
+    c_hat[ind].x = (4.0*c_hat_0[ind].x - c_hat_1[ind].x + 2.0*dt*(2.0*f_hat_0[ind].x - f_hat_1[ind].x)) / (3.0 + 2.0*KAPPA*dt*k*k);
+    c_hat[ind].y = (4.0*c_hat_0[ind].y - c_hat_1[ind].y + 2.0*dt*(2.0*f_hat_0[ind].y - f_hat_1[ind].y)) / (3.0 + 2.0*KAPPA*dt*k*k);
 }
 
 /*
