@@ -32,7 +32,6 @@ __global__ void add_linear(complex *f_hat, complex *c_hat, complex *out);
 __global__ void gradient(complex *f, complex *grad_x, complex *grad_y, double hh);
 __global__ void mobility(double *f_x, double *f_y, double *c);
 __global__ void divergence(complex *f_x, complex *f_y, complex *div);
-__global__ void clamp(double *c);
 
 void step(double dt);
 void init_solver(double *c, double dt);

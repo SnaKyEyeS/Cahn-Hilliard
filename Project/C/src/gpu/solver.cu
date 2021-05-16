@@ -168,7 +168,6 @@ void non_linear_term(complex *c_hat, complex *f_hat) {
     // Compute c
     scale<<<NblocksCplx, NthreadsCplx>>>(c_hat, f_hat, hh);
     cufftExecZ2D(irfft, f_hat, c_gpu);
-    clamp<<<NblocksReal, NthreadsReal>>>(c_gpu);
 
     // Compute f_hat
     f<<<NblocksReal, NthreadsReal>>>(c_gpu, f_gpu);
@@ -232,8 +231,11 @@ __global__ void gradient(complex *f, complex *grad_x, complex *grad_y, double hh
 __global__ void mobility(double *f_x, double *f_y, double *c) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
-    f_x[i] *= (1 - c[i]*c[i] - A);
-    f_y[i] *= (1 - c[i]*c[i] - A);
+    double mobility = 1 - c[i]*c[i];
+    mobility = mobility >= 0 ? mobility: 0.0;
+
+    f_x[i] *= (mobility - A);
+    f_y[i] *= (mobility - A);
 }
 __global__ void divergence(complex *f_x, complex *f_y, complex *div) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -250,15 +252,6 @@ __global__ void divergence(complex *f_x, complex *f_y, complex *div) {
 
     div[ind].x = -(k_x*f_x[ind].y + k_y*f_y[ind].y) - A*k*div[ind].x;
     div[ind].y =   k_x*f_x[ind].x + k_y*f_y[ind].x  - A*k*div[ind].y;
-}
-__global__ void clamp(double *c) {
-     int i = blockIdx.x * blockDim.x + threadIdx.x;
-
-     if (c[i] > 1.0) {
-         c[i] = 1.0;
-     } else if (c[i] < -1.0) {
-        c[i] = -1.0;
-     }
 }
 #endif
 
