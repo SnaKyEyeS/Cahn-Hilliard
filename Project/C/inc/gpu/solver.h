@@ -28,8 +28,7 @@ void non_linear_term(complex *c_hat, complex *f_hat);
 __global__ void scale(complex *c_hat, complex *out, double hh);
 __global__ void f(double *c, double *f);
 __global__ void deriv(complex *c_hat);
-__global__ void add_linear(complex *f_hat, complex *c_hat, complex *out);
-__global__ void gradient(complex *f, complex *grad_x, complex *grad_y, double hh);
+__global__ void gradient(complex *f_hat, complex *c_hat, complex *grad_x, complex *grad_y, double hh);
 __global__ void mobility(double *f_x, double *f_y, double *c);
 __global__ void divergence(complex *f_x, complex *f_y, complex *div);
 
