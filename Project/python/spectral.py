@@ -145,7 +145,7 @@ def rk4(c, dt):
         yield c
 
 
-def euler_implicit(c, dt):
+def implicit_euler(c, dt):
     """
     Time stepping/integration scheme using the implicit euler scheme
     """
@@ -166,9 +166,7 @@ def euler_implicit(c, dt):
 
 
 # Problem parameters
-
 kappa = 1e-4
-
 n = 128
 dt = 1e-6
 n_step = 12000*4
