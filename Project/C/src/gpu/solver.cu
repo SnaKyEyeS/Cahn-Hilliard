@@ -205,7 +205,7 @@ __global__ void gradient(complex *f_hat, complex *c_hat, complex *grad_x, comple
     double l = (i < N_DISCR/2) ? i : i-N_DISCR;
     double k_x = 2.0*M_PI*l / N_DISCR;
     double k_y = 2.0*M_PI*j / N_DISCR;
-    double k = FOUR_PI_SQUARED * (j*j + l*l) / (N_DISCR*N_DISCR);
+    double k = k_x*k_x + k_y*k_y;
 
     // Add linear term
     double fx = f_hat[ind].x + k*c_hat[ind].x;
