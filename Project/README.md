@@ -24,9 +24,10 @@ source venv/bin/activate
 python spectral.py
 ```
 
-There are two python implementation:
+There are three python implementations:
  * [naive.py](python/naive.py) using finite differences & an explicit euler time stepping scheme
  * [spectral.py](python/spectral.py) using Fourier spectral differentiation methods and various more advanced solvers (such as IMEX and ETDRK4).
+ * [vmobility.py](python/spectral.py) implementing the Cahn-Hilliard equation with variable mobility M(c) = (1-ac²).
 
 Should you wish to save a movie of the animation, you can easily do so by changing the `if False:` into `if True:` in the main subroutine of the scripts.
 
@@ -42,9 +43,10 @@ make
 ./project
 ```
 When successful, a window should appear with the animation of the Cahn-Hilliard solver. It is possible to choose different compilation parameters to change the simulation parameters or choose different solvers. Those parameters are flags you may add to the `cmake` command:
- * `-DN_DISCR=128|256|512|...` (default is 128): sets the discretisation level of the N-by-N grid. To avoid any problem (and for the sake of efficiency), this number should always be a power of 2 and greater or equal to 128.
-  * `DSOLVER=ETDRK4|IMEX` (default is ETDRK4): changes the time stepping scheme. ETDRK4 is a bit slower per iteration than the IMEX schemes, but otherwise way more precise and much faster to reach a given precision and has a bigger stability region. Therefore, it should always be preferred.
-  * `DUSE_CUDA=off|on` (default is OFF): whether to use CUDA to accelerate the simulation or not. Only available if you have a Nvidia GPU and CUDA installed. As it is much faster, it should be used whenever possible.
+ * `-DN_DISCR=128|256|512|...` (default is 128): sets the discretisation level of the N-by-N grid. To avoid any problem (and for the sake of efficiency), this number should always be a power of 2 and greater or equal to 128, though it should work for any integer as long as CUDA is turned off.
+  * `-DSOLVER=ETDRK4|IMEX` (default is ETDRK4): changes the time stepping scheme. ETDRK4 is a bit slower per iteration than the IMEX schemes, but otherwise way more precise and much faster to reach a given precision and has a bigger stability region. Therefore, it should always be preferred.
+  * `-DUSE_CUDA=off|on` (default is OFF): whether to use CUDA to accelerate the simulation or not. Only available if you have a Nvidia GPU and CUDA installed. As it is much faster, it should be used whenever possible.
+  * `-DMOBILITY=CONSTANT|VARIABLE` (default is CONSTANT): switch to variable mobility simulation. The simulation parameters then change accordingly.
 
 ### Installation instructions
 
