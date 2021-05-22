@@ -11,7 +11,7 @@ There are three different available implementations:
 
 ## Python implementation
 
-The files can be found in the [python](Project/python/) subfolder. The installation requirements are fairly simple and we recommend the following procedure:
+The files can be found in the [python](python/) subfolder. The installation requirements are fairly simple and we recommend the following procedure:
 ``` bash
 # Create venv & install requirements
 cd /path/to/python
@@ -25,15 +25,15 @@ python spectral.py
 ```
 
 There are three python implementations:
- * [naive.py](Project/python/naive.py) using finite differences & an explicit euler time stepping scheme
- * [spectral.py](Project/python/spectral.py) using Fourier spectral differentiation methods and various more advanced solvers (such as IMEX and ETDRK4).
- * [vmobility.py](Project/python/spectral.py) implementing the Cahn-Hilliard equation with variable mobility M(c) = (1-ac²).
+ * [naive.py](python/naive.py) using finite differences & an explicit euler time stepping scheme
+ * [spectral.py](python/spectral.py) using Fourier spectral differentiation methods and various more advanced solvers (such as IMEX and ETDRK4).
+ * [vmobility.py](python/spectral.py) implementing the Cahn-Hilliard equation with variable mobility M(c) = (1-ac²).
 
 Should you wish to save a movie of the animation, you can easily do so by changing the `if False:` into `if True:` in the main subroutine of the scripts.
 
 ## C/CUDA implementations
 
-The files can be found in the [C](Project/C/) subfolder. The installation requirements will be detailled later, as it is a bit more complex. First, we will detail the compilation & running procedure:
+The files can be found in the [C](C/) subfolder. The installation requirements will be detailled later, as it is a bit more complex. First, we will detail the compilation & running procedure:
 ```bash
 cd /path/to/C
 mkdir build
