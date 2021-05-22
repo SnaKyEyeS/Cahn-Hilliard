@@ -40,7 +40,7 @@ mkdir build
 cd build
 cmake ..
 make
-./project
+./ch
 ```
 When successful, a window should appear with the animation of the Cahn-Hilliard solver. It is possible to choose different compilation parameters to change the simulation parameters or choose different solvers. Those parameters are flags you may add to the `cmake` command:
  * `-DN_DISCR=128|256|512|...` (default is 128): sets the discretisation level of the N-by-N grid. To avoid any problem (and for the sake of efficiency), this number should always be a power of 2 and greater or equal to 128, though it should work for any integer as long as CUDA is turned off.

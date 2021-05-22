@@ -4,10 +4,10 @@
 cmake_minimum_required(VERSION 3.17)
 
 # Project name
-project(LMECA2300 LANGUAGES C)
+project(CahnHilliard LANGUAGES C)
 
 # Exec name
-set(EXEC_NAME project)
+set(EXEC_NAME ch)
 set(CMAKE_C_FLAGS "-O3")
 
 # CMake module
