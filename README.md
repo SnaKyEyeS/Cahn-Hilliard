@@ -1,9 +1,13 @@
 # Cahn-Hilliard solver
 
-This project pertains to the numerical resolution of the Cahn-Hilliard equation in its dimensionless, constant mobility form:
+This project pertains to the numerical resolution of the Cahn-Hilliard equation in its dimensionless, constant mobility form,
 
 <p align="center"><a href="https://www.codecogs.com/eqnedit.php?latex=\frac{\partial&space;c}{\partial&space;t}&space;=&space;\nabla^2\left(c^3&space;-&space;c&space;-&space;\kappa\nabla^2c\right)" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\frac{\partial&space;c}{\partial&space;t}&space;=&space;\nabla^2\left(c^3&space;-&space;c&space;-&space;\kappa\nabla^2c\right)" title="\frac{\partial c}{\partial t} = \nabla^2\left(c^3 - c - \kappa\nabla^2c\right)" /></a></p>
 
+and with variable mobility,
+<p align="center"><a href="https://www.codecogs.com/eqnedit.php?latex=\frac{\partial&space;c}{\partial&space;t}&space;=&space;\nabla\cdot\left[(1-c^2)\nabla\left(c^3&space;-&space;c&space;-&space;\kappa\nabla^2c\right)\right]." target="_blank"><img src="https://latex.codecogs.com/gif.latex?\frac{\partial&space;c}{\partial&space;t}&space;=&space;\nabla\cdot\left[(1-c^2)\nabla\left(c^3&space;-&space;c&space;-&space;\kappa\nabla^2c\right)\right]." title="\frac{\partial c}{\partial t} = \nabla\cdot\left[(1-c^2)\nabla\left(c^3 - c - \kappa\nabla^2c\right)\right]." /></a></p>
+
+Two projects at the UCLouvain were completed based on the solvers implemented in this repository. The [first one](LMECA2300.pdf) was made for the LMECA2300 course and is a short report going over the implementation details. The [second one](LINMA2720.pdf) was made for the LINMA2720 course and is written in french. It focuses more on the mathematical models behind the Cahn-Hilliard equation.
 There are three different available implementations:
  * Python
  * C
@@ -71,3 +75,9 @@ By default, the compiler will choose Intel's MKL if both libraries are available
 
 ##### CUDA
 The CUDA version of the solver uses cuFFT to perform the FFT's and uses CUDA kernels to accelerate various computations. To run this version, you will need a Nvidia GPU as well as to install CUDA. As the installation procedure is a bit more tedious, we recommend you to follow this [official installation guide](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html).
+
+
+## Reports
+
+<a id="1">[1]</a> A. Quiriny, G. Poncelet, "LMECA2300: Project report", 2021.
+<a id="1">[2]</a> P. Veldeman, G. Poncelet, "Rapport LINMA2720 – L’équation de Cahn-Hilliard avec une mobilité variable : application d’une méthode spectrale", 2021.
