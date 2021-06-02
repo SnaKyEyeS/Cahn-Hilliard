@@ -31,7 +31,7 @@ python spectral.py
 There are three python implementations:
  * [naive.py](python/naive.py) using finite differences & an explicit euler time stepping scheme
  * [spectral.py](python/spectral.py) using Fourier spectral differentiation methods and various more advanced solvers (such as IMEX and ETDRK4).
- * [vmobility.py](python/spectral.py) implementing the Cahn-Hilliard equation with variable mobility M(c) = (1-ac²).
+ * [vmobility.py](python/vmobility.py) implementing the Cahn-Hilliard equation with variable mobility M(c) = (1-ac²).
 
 Should you wish to save a movie of the animation, you can easily do so by changing the `if False:` into `if True:` in the main subroutine of the scripts.
 
